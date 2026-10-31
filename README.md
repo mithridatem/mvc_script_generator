@@ -20,7 +20,7 @@ Une instance MySQL/MariaDB n'est nécessaire que pour les pages d'authentificati
 ## Utilisation
 
 ```bash
-git clone https://github.com/mithridatem/script_framework_mvc.git
+git clone https://github.com/mithridatem//script_generator_mvc.git
 cd script_framework_mvc
 
 # BAC+2 : router seul, MVC simple
