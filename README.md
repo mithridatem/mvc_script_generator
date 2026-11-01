@@ -20,7 +20,7 @@ Une instance MySQL/MariaDB n'est nécessaire que pour les pages d'authentificati
 ## Utilisation
 
 ```bash
-git clone https://github.com/mithridatem//script_generator_mvc.git
+git clone https://github.com/mithridatem/mvc_script_generator_mvc.git
 cd script_framework_mvc
 
 # BAC+2 : router seul, MVC simple
@@ -59,5 +59,3 @@ bash tests/smoke-advanced.sh
 
 Ces tests vérifient les fichiers, les paramètres et la syntaxe PHP (sans dépendances).
 Après installation Composer, exécuter les tests et les parcours HTTP indiqués dans le README du projet généré.
-
-L'ancienne archive `archivev2.tar.gz` reste dans l'historique mais n'est plus utilisée.
