@@ -31,3 +31,4 @@ jobs:
           php tests/csrf_token_manager_test.php
           php tests/form_submission_test.php
           php tests/user_session_manager_test.php
+          php tests/auth_form_render_test.php
