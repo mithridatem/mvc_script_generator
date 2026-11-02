@@ -28,3 +28,6 @@ jobs:
           composer install --no-interaction --prefer-dist
           php tests/login_input_test.php
           php tests/register_user_input_test.php
+          php tests/csrf_token_manager_test.php
+          php tests/form_submission_test.php
+          php tests/user_session_manager_test.php
