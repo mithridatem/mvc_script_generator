@@ -16,43 +16,51 @@ final class LoginController extends AbstractController
     public function __construct(
         private LoginService $loginService,
         private UserSessionManager $session,
-        private CsrfTokenManager $csrf
+        private CsrfTokenManager $csrf,
     ) {}
 
     #[Route(path: '/login', method: 'GET', grants: [])]
     public function showLogin(): mixed
     {
-        return $this->render('login', 'Connexion', [
-            'csrf_token' => $this->csrf->generate('login')
-        ]);
+        return $this->renderLoginForm();
     }
 
     #[Route(path: '/login', method: 'POST', grants: [])]
     public function login(RequestInterface $request): mixed
     {
-        if (!$this->csrf->isValid(
+        $result = [];
+
+        $isCsrfValid = $this->csrf->isValid(
             'login',
             $request->post('csrf_token')
-        )) {
-            return $this->render('login', 'Connexion', [
-                'errors' => 'Token CSRF invalide',
-                'csrf_token' => $this->csrf->generate('login'),
-            ]);
+        );
+
+        if (!$isCsrfValid) {
+            $result = ['errors' => 'Token CSRF invalide'];
         }
 
-        $result = $this->loginService->login(LoginInput::fromArray([
-            'email' => $request->post('email'),
-            'password' => $request->post('password'),
-        ]));
-
-        if (!isset($result['user'])) {
-            return $this->render('login', 'Connexion', [
-                ...$result,
-                'csrf_token' => $this->csrf->generate('login'),
+        if ($isCsrfValid) {
+            $input = LoginInput::fromArray([
+                'email' => $request->post('email'),
+                'password' => $request->post('password'),
             ]);
+
+            $result = $this->loginService->login($input);
+
+            if (isset($result['user'])) {
+                $this->session->login($result['user']);
+                $this->redirect('/');
+            }
         }
 
-        $this->session->login($result['user']);
-        $this->redirect('/');
+        return $this->renderLoginForm($result);
+    }
+
+    private function renderLoginForm(array $data = []): mixed
+    {
+        return $this->render('login', 'Connexion', [
+            ...$data,
+            'csrf_token' => $this->csrf->generate('login'),
+        ]);
     }
 }
