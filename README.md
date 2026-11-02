@@ -8,7 +8,7 @@ Projet pédagogique de génération de squelettes PHP avec les librairies open s
 | Profil | Dépendances | Objectif |
 |---|---|---|
 | **Basic** | Routing uniquement | Comprendre MVC, contrôleur, service, repository, entité |
-| **Advanced** | Routing, Validation, Autowiring | DTO, contraintes par attributs, injection de dépendances, inscription/connexion |
+| **Advanced** | Routing, Validation, Autowiring | DTO, contraintes par attributs, injection de dépendances, inscription/connexion, CSRF par formulaire |
 
 Les classes de base sont copiées dans chaque projet et peuvent être modifiées ; elles ne font pas partie d'une quatrième librairie.
 
@@ -20,8 +20,8 @@ Une instance MySQL/MariaDB n'est nécessaire que pour les pages d'authentificati
 ## Utilisation
 
 ```bash
-git clone https://github.com/mithridatem/mvc_script_generator_mvc.git
-cd script_framework_mvc
+git clone https://github.com/mithridatem/mvc_script_generator.git
+cd mvc_script_generator
 
 # BAC+2 : router seul, MVC simple
 bash script.sh --profile basic --name demo_basic
@@ -58,4 +58,4 @@ bash tests/smoke-advanced.sh
 ```
 
 Ces tests vérifient les fichiers, les paramètres et la syntaxe PHP (sans dépendances).
-Après installation Composer, exécuter les tests et les parcours HTTP indiqués dans le README du projet généré.
+Après installation Composer, exécuter les tests et les parcours HTTP indiqués dans le README du projet généré. Le profil Advanced suit la branche `main` de `evaluationWeb/project_exemple` pour le parcours d'authentification et la gestion CSRF ; les placeholders de configuration et les correctifs d'hydratation propres au générateur sont conservés.
