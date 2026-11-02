@@ -15,7 +15,8 @@
     <main class="container-fluid">
         <h1>Créer un compte</h1>
         <form action="" method="post">
-            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($this->getCsrfToken(), ENT_QUOTES, 'UTF-8') ?>">
+            <input type="hidden" name="csrf_token"
+                   value="<?= htmlspecialchars($data['csrf_token'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
             <fieldset>
                 <input type="text" name="firstname" placeholder="saisir votre Prénom">
                 <?php $this->renderComponent("error_validation", ["errors" => $data["validation"]["firstname"] ?? []]); ?>
