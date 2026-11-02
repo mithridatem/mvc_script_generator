@@ -23,18 +23,23 @@ Connexion : http://127.0.0.1:8000/login
 - `src/DTO` : données d'entrée et contraintes de validation.
 - `src/Service` : orchestration des cas d'utilisation.
 - `src/Repository` : persistance SQL via PDO.
-- `src/Security` : hachage et session d'authentification.
-- `config/service.php` : déclaration de la fabrique PDO dans le conteneur.
+- `src/Security` : hachage, session d'authentification et protection CSRF par formulaire.
+- `config/service.php` : déclaration de la fabrique PDO et de la configuration du service d'upload.
+- `src/Service/UploadFileService.php` : squelette pédagogique d'upload (méthode non implémentée).
+- `src/Utils/Tools.php` : utilitaires provenant du projet de référence.
 
 ## Vérifier
 
 ```sh
 php tests/register_user_input_test.php
 php tests/login_input_test.php
+php tests/csrf_token_manager_test.php
+php tests/form_submission_test.php
+php tests/user_session_manager_test.php
 ```
 
 Puis tester le parcours réel avec MySQL : inscription, doublon d'email, identifiants erronés, connexion et session. Ces tests autonomes ne remplacent pas des tests d'intégration.
 
-Les contrôleurs emploient encore les helpers CSRF de `AbstractController` : c'est une base d'exercice pour leur future extraction en `Security/CsrfTokenManager`.
+La protection CSRF est assurée par `Security/CsrfTokenManager` : un token par formulaire (`login` / `register`), vérifié avant les services métier. Le token est conservé lorsque le formulaire est réaffiché après une erreur. `AbstractController::isFormSubmitted()` contrôle la méthode HTTP POST, sans dépendre du bouton de soumission.
 
 **Sécurité** : le squelette est pédagogique. Pour un déploiement public, ajouter limitation des tentatives, tests d'intégration et une gestion cohérente des exceptions SQL. Ne jamais committer `.env`.
