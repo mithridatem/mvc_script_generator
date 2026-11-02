@@ -36,10 +36,11 @@ php tests/login_input_test.php
 php tests/csrf_token_manager_test.php
 php tests/form_submission_test.php
 php tests/user_session_manager_test.php
+php tests/auth_form_render_test.php
 ```
 
 Puis tester le parcours réel avec MySQL : inscription, doublon d'email, identifiants erronés, connexion et session. Ces tests autonomes ne remplacent pas des tests d'intégration.
 
-La protection CSRF est assurée par `Security/CsrfTokenManager` : un token par formulaire (`login` / `register`), vérifié avant les services métier. Le token est conservé lorsque le formulaire est réaffiché après une erreur. `AbstractController::isFormSubmitted()` contrôle la méthode HTTP POST, sans dépendre du bouton de soumission.
+La protection CSRF est assurée par `Security/CsrfTokenManager` : un token par formulaire (`login` / `register`), vérifié avant les services métier. Le token est conservé lorsque le formulaire est réaffiché après une erreur. Chaque contrôleur utilise une méthode privée de rendu dédiée (`renderLoginForm` / `renderRegisterForm`) et un unique appel de rendu en fin de traitement ; les conditions CSRF sont explicites sans `else`. `AbstractController::isFormSubmitted()` contrôle la méthode HTTP POST, sans dépendre du bouton de soumission.
 
 **Sécurité** : le squelette est pédagogique. Pour un déploiement public, ajouter limitation des tentatives, tests d'intégration et une gestion cohérente des exceptions SQL. Ne jamais committer `.env`.
