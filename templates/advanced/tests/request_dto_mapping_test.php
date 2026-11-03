@@ -12,7 +12,7 @@ use Mithridatem\Routing\Http\Request;
 use Mithridatem\Routing\Route;
 use Mithridatem\Routing\Router;
 
-function assertMapping(bool $condition, string $message): void
+function checkMapping(bool $condition, string $message): void
 {
     if (!$condition) {
         throw new RuntimeException($message);
@@ -25,36 +25,37 @@ $router->map(Route::post('/register', static fn (ParameterCollectionRequestInter
 $router->map(Route::post('/login', static fn (ParameterCollectionRequestInterface $request)
     => LoginInput::fromArray($request->allPost())));
 
-$register = $router->dispatch(new Request('/register', 'POST', post: [
+$registration = $router->dispatch(new Request('/register', 'POST', post: [
     'firstname' => ' Ada ',
     'lastname' => ' Lovelace ',
     'email' => ' ada@example.test ',
     'password' => ' secret ',
     'confirm_password' => ' secret ',
-    'csrf_token' => 'form-token',
-    'unexpected' => 'ignored',
+    'csrf_token' => 'csrf-value',
+    'unused' => 'ignored',
 ]));
-assertMapping($register instanceof RegisterUserInput, 'Register : mauvais DTO');
-assertMapping($register->firstname === 'Ada', 'Register : prénom non normalisé');
-assertMapping($register->lastname === 'Lovelace', 'Register : nom non normalisé');
-assertMapping($register->email === 'ada@example.test', 'Register : email non normalisé');
-assertMapping($register->password === ' secret ', 'Register : mot de passe modifié');
-assertMapping($register->confirmPassword === ' secret ', 'Register : confirmation modifiée');
+
+checkMapping($registration instanceof RegisterUserInput, 'Register : DTO incorrect');
+checkMapping($registration->firstname === 'Ada', 'Register : firstname');
+checkMapping($registration->lastname === 'Lovelace', 'Register : lastname');
+checkMapping($registration->email === 'ada@example.test', 'Register : email');
+checkMapping($registration->password === ' secret ', 'Register : password modifié');
+checkMapping($registration->confirmPassword === ' secret ', 'Register : confirmation modifiée');
 
 $login = $router->dispatch(new Request('/login', 'POST', post: [
     'email' => ' ada@example.test ',
     'password' => ' secret ',
-    'csrf_token' => 'form-token',
+    'csrf_token' => 'csrf-value',
 ]));
-assertMapping($login instanceof LoginInput, 'Login : mauvais DTO');
-assertMapping($login->email === 'ada@example.test', 'Login : email non normalisé');
-assertMapping($login->password === ' secret ', 'Login : mot de passe modifié');
+checkMapping($login instanceof LoginInput, 'Login : DTO incorrect');
+checkMapping($login->email === 'ada@example.test', 'Login : email');
+checkMapping($login->password === ' secret ', 'Login : password modifié');
 
 $invalid = $router->dispatch(new Request('/login', 'POST', post: [
-    'email' => ['bad'],
-    'password' => ['bad'],
+    'email' => ['invalid'],
+    'password' => ['invalid'],
 ]));
-assertMapping($invalid->email === null, 'Login : email tableau accepté');
-assertMapping($invalid->password === null, 'Login : mot de passe tableau accepté');
+checkMapping($invalid->email === null, 'Login : tableau email non rejeté');
+checkMapping($invalid->password === null, 'Login : tableau password non rejeté');
 
-echo "Request to DTO mapping : OK\n";
+echo "Request DTO mapping : OK\n";
