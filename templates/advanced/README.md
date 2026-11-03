@@ -28,6 +28,13 @@ Connexion : http://127.0.0.1:8000/login
 - `src/Service/UploadFileService.php` : squelette pédagogique d'upload (méthode non implémentée).
 - `src/Utils/Tools.php` : utilitaires provenant du projet de référence.
 
+Les actions POST `LoginController::login()` et `RegisterController::register()`
+reçoivent `ParameterCollectionRequestInterface` (router `^1.4`) et construisent
+leurs DTO avec `fromArray($request->allPost())`. Les données HTTP restent dans
+la couche contrôleur ; les services conservent leurs signatures DTO.
+Les champs non attendus sont ignorés par les méthodes `fromArray()`.
+La vérification CSRF reste effectuée avant la création des DTO.
+
 ## Vérifier
 
 ```sh
@@ -37,6 +44,7 @@ php tests/csrf_token_manager_test.php
 php tests/form_submission_test.php
 php tests/user_session_manager_test.php
 php tests/auth_form_render_test.php
+php tests/request_dto_mapping_test.php
 ```
 
 Puis tester le parcours réel avec MySQL : inscription, doublon d'email, identifiants erronés, connexion et session. Ces tests autonomes ne remplacent pas des tests d'intégration.
