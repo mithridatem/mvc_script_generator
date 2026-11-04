@@ -1,8 +1,10 @@
-name: MVC Basic and Advanced scaffold
+name: MVC scaffolds — Basic, Web Advanced, API JWT
 on:
   push:
-    branches: [main, "feat/scaffold-basic-mvc-routing", "feat/scaffold-advanced-three-libraries"]
+    branches: [main]
   pull_request:
+  workflow_dispatch:
+
 jobs:
   scaffold:
     runs-on: ubuntu-latest
@@ -10,25 +12,28 @@ jobs:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2'
-          extensions: pdo_mysql
+          php-version: '8.3'
+          extensions: pdo_mysql, mbstring, intl
           tools: composer:v2
-      - name: Smoke tests
+      - name: Smoke tests — all profiles
         run: |
           bash tests/smoke-basic.sh
           bash tests/smoke-advanced.sh
-      - name: Test Basic dependencies
+          bash tests/smoke-api-jwt.sh
+      - name: Test basic dependencies
         run: |
           bash script.sh --name ci_basic --profile basic --no-install
-          cd ci_basic && composer install --no-interaction --prefer-dist
-      - name: Test Advanced DTO and security
+          cd ci_basic
+          composer install --no-interaction --prefer-dist
+      - name: Test Advanced Web DTO and CSRF middleware
         run: |
           bash script.sh --name ci_advanced --profile advanced --no-install
           cd ci_advanced
           composer install --no-interaction --prefer-dist
-          php tests/login_input_test.php
-          php tests/register_user_input_test.php
-          php tests/csrf_token_manager_test.php
-          php tests/form_submission_test.php
-          php tests/user_session_manager_test.php
-          php tests/auth_form_render_test.php
+          for test in tests/*_test.php; do php "$test"; done
+      - name: Test API JWT authentication, grants and routes
+        run: |
+          bash script.sh --name ci_api --profile api-jwt --no-install
+          cd ci_api
+          composer install --no-interaction --prefer-dist
+          for test in tests/*_test.php; do php "$test"; done
