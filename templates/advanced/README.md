@@ -1,59 +1,44 @@
-# MVC Advanced — Routing + Validation + Autowiring
+# MVC Advanced — Web : sessions PHP + protection CSRF
 
-Squelette pédagogique dérivé de `evaluationWeb/project_exemple`.
-Il montre une inscription et une connexion avec séparation des responsabilités.
+Profil pédagogique basé sur [project_exemple / variant/web-session-csrf](https://github.com/evaluationWeb/project_exemple/tree/variant/web-session-csrf).
 
-## Installation
+Il utilise `mithridatem/router`, `mithridatem/validation` et `mithridatem/autowiring`. Authentification HTML en session PHP, `grants` de routes et vérification CSRF dans le **middleware** (plus dans les contrôleurs).
 
-Dépendances déclarées dans `composer.json` : `mithridatem/router:^1.4`,
-`mithridatem/validation:^1.2` et `mithridatem/autowiring:^1.4`.
-La version 1.4 d'autowiring permet également l'enregistrement optionnel de factories objets via `FactoryInterface` ; la factory PDO existante reste inchangée.
+## Installer
 
-
-```sh
+```bash
 composer install
-# Modifier .env (notamment DATABASE_PASSWORD) si nécessaire
-# Importer db.sql dans MySQL/MariaDB pour créer la base et la table user
+# Configurer le fichier .env généré (notamment DATABASE_PASSWORD)
+# Importer db.sql dans MySQL/MariaDB
 php -S 127.0.0.1:8000 -t public
 ```
 
-Accueil : http://127.0.0.1:8000/
-Inscription : http://127.0.0.1:8000/register
-Connexion : http://127.0.0.1:8000/login
+Parcours : `GET /login`, `POST /login`, `GET /register`, `POST /register`. Les requêtes POST sont protégées par `CsrfMiddleware`. Une soumission sans token valide provoque une réponse HTTP 403. Le contrôleur ne traite que les DTO et les cas d'utilisation. Les rôles Web continuent de provenir de la session PHP via `ArrayGrantChecker`.
 
 ## Architecture
 
-- `public/index.php` : routeur + conteneur et démarrage session.
-- `src/Controller` : gestion HTTP et rendu.
-- `src/DTO` : données d'entrée et contraintes de validation.
-- `src/Service` : orchestration des cas d'utilisation.
-- `src/Repository` : persistance SQL via PDO.
-- `src/Security` : hachage, session d'authentification et protection CSRF par formulaire.
-- `config/service.php` : déclaration de la fabrique PDO et de la configuration du service d'upload.
-- `src/Service/UploadFileService.php` : squelette pédagogique d'upload (méthode non implémentée).
-- `src/Utils/Tools.php` : utilitaires provenant du projet de référence.
+- `public/index.php` : session, conteneur, routeur, résolution middleware.
+- `src/Middleware/CsrfMiddleware.php` : vérification des tokens avant exécution du contrôleur.
+- `src/Middleware/ContainerMiddlewareResolver.php` : adaptation au conteneur autowiring.
+- `src/Security/CsrfTokenManager.php` : génération et validation par session.
+- `src/Controller` : traitements HTTP, templates HTML.
+- `src/DTO` : entrées validées ; `src/Service` : métier ; `src/Repository` : accès PDO.
+- `config/service.php` : fabrique PDO et configuration upload.
 
-Les actions POST `LoginController::login()` et `RegisterController::register()`
-reçoivent `ParameterCollectionRequestInterface` (router `^1.4`) et construisent
-leurs DTO avec `fromArray($request->allPost())`. Les données HTTP restent dans
-la couche contrôleur ; les services conservent leurs signatures DTO.
-Les champs non attendus sont ignorés par les méthodes `fromArray()`.
-La vérification CSRF reste effectuée avant la création des DTO.
+La correction d'hydratation de l'entité `User`, le DSN MySQL et les placeholders du générateur sont conservés.
 
-## Vérifier
+## Tests
 
-```sh
-php tests/register_user_input_test.php
+```bash
 php tests/login_input_test.php
+php tests/register_user_input_test.php
 php tests/csrf_token_manager_test.php
+php tests/csrf_middleware_test.php
+php tests/csrf_route_configuration_test.php
 php tests/form_submission_test.php
 php tests/user_session_manager_test.php
 php tests/auth_form_render_test.php
 php tests/request_dto_mapping_test.php
 ```
 
-Puis tester le parcours réel avec MySQL : inscription, doublon d'email, identifiants erronés, connexion et session. Ces tests autonomes ne remplacent pas des tests d'intégration.
-
-La protection CSRF est assurée par `Security/CsrfTokenManager` : un token par formulaire (`login` / `register`), vérifié avant les services métier. Le token est conservé lorsque le formulaire est réaffiché après une erreur. Chaque contrôleur utilise une méthode privée de rendu dédiée (`renderLoginForm` / `renderRegisterForm`) et un unique appel de rendu en fin de traitement ; les conditions CSRF sont explicites sans `else`. `AbstractController::isFormSubmitted()` contrôle la méthode HTTP POST, sans dépendre du bouton de soumission.
-
-**Sécurité** : le squelette est pédagogique. Pour un déploiement public, ajouter limitation des tentatives, tests d'intégration et une gestion cohérente des exceptions SQL. Ne jamais committer `.env`.
+Puis tester le parcours complet sur une base de données réelle. Aucun endpoint JWT n'est généré dans ce profil. Ne committer ni `.env` ni les identifiants.
