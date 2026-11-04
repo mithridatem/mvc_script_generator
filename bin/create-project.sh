@@ -14,10 +14,10 @@ CONFIGURE_DB="no"
 
 usage() {
   cat <<'USAGE'
-Usage: bash script.sh [--name NOM] [--profile basic|advanced] [--target DOSSIER]
+Usage: bash script.sh [--name NOM] [--profile basic|advanced|api-jwt] [--target DOSSIER]
                       [--no-install] [--db-host HOTE] [--db-port PORT]
                       [--db-name BASE] [--db-user UTILISATEUR] [--configure-db]
-Deux profils : basic (router seul) ou advanced (router + validation + autowiring).
+Trois profils : basic (router seul), advanced (Web session + CSRF) ou api-jwt (API Bearer JWT).
 --configure-db demande le mot de passe sans affichage (uniquement en mode interactif).
 Sans --configure-db, compléter DATABASE_PASSWORD dans le .env généré.
 USAGE
@@ -52,14 +52,14 @@ fi
 
 if [[ -z "$PROFILE" ]]; then
   if [[ -t 0 ]]; then
-    read -r -p "Profil [basic/advanced] (basic) : " PROFILE
+    read -r -p "Profil [basic/advanced/api-jwt] (basic) : " PROFILE
     PROFILE="${PROFILE:-basic}"
   else
     PROFILE="basic"
   fi
 fi
 
-if [[ "$PROFILE" != "basic" && "$PROFILE" != "advanced" ]]; then
+if [[ "$PROFILE" != "basic" && "$PROFILE" != "advanced" && "$PROFILE" != "api-jwt" ]]; then
   echo "Profil inconnu : $PROFILE" >&2; exit 2
 fi
 
@@ -73,7 +73,7 @@ if [[ -e "$DEST" ]]; then
   echo "Destination déjà existante : $DEST" >&2; exit 2
 fi
 
-if [[ "$PROFILE" == "advanced" ]]; then
+if [[ "$PROFILE" == "advanced" || "$PROFILE" == "api-jwt" ]]; then
   DB_NAME="${DB_NAME:-$NAME}"
   if [[ ! "$DB_HOST" =~ ^[a-zA-Z0-9_.:-]+$ ||
         ! "$DB_PORT" =~ ^[0-9]{1,5}$ ||
@@ -83,8 +83,8 @@ if [[ "$PROFILE" == "advanced" ]]; then
   fi
 fi
 
-if [[ "$CONFIGURE_DB" == "yes" && "$PROFILE" != "advanced" ]]; then
-  echo "--configure-db ne concerne que le profil advanced." >&2; exit 2
+if [[ "$CONFIGURE_DB" == "yes" && "$PROFILE" == "basic" ]]; then
+  echo "--configure-db ne concerne que advanced et api-jwt." >&2; exit 2
 fi
 if [[ "$CONFIGURE_DB" == "yes" && ! -t 0 ]]; then
   echo "--configure-db nécessite un terminal interactif." >&2; exit 2
@@ -96,7 +96,7 @@ sed "s/__PROJECT_NAME__/$SLUG/g" "$DEST/composer.json" > "$DEST/composer.tmp"
 mv "$DEST/composer.tmp" "$DEST/composer.json"
 cp "$DEST/.env.example" "$DEST/.env"
 
-if [[ "$PROFILE" == "advanced" ]]; then
+if [[ "$PROFILE" == "advanced" || "$PROFILE" == "api-jwt" ]]; then
   # Les valeurs non secrètes sont validées avant substitution.
   sed -i.bak -e "s|^DATABASE_HOST=.*|DATABASE_HOST=$DB_HOST|" \
              -e "s|^DATABASE_PORT=.*|DATABASE_PORT=$DB_PORT|" \
@@ -105,6 +105,13 @@ if [[ "$PROFILE" == "advanced" ]]; then
   rm -f "$DEST/.env.bak"
   sed "s/__DATABASE_NAME__/$DB_NAME/g" "$DEST/db.sql" > "$DEST/db.sql.tmp"
   mv "$DEST/db.sql.tmp" "$DEST/db.sql"
+  if [[ "$PROFILE" == "api-jwt" ]]; then
+    # One secret per generated project, never saved to the template or logs.
+    JWT_SECRET="$(php -r 'echo bin2hex(random_bytes(32));')"
+    sed -i.bak "s|^JWT_SECRET=__JWT_SECRET__$|JWT_SECRET=$JWT_SECRET|" "$DEST/.env"
+    rm -f "$DEST/.env.bak"
+    unset JWT_SECRET
+  fi
   if [[ "$CONFIGURE_DB" == "yes" ]]; then
     read -rs -p "Mot de passe de la base de données (ne sera pas affiché) : " DB_PASS
     printf '\n'
