@@ -27,7 +27,8 @@ if grep -q "session_start(" "$PROJECT/public/index.php"; then
 fi
 grep -q '^DATABASE_NAME=demo_api$' "$PROJECT/.env"
 grep -q 'CREATE DATABASE IF NOT EXISTS `demo_api`' "$PROJECT/db.sql"
-test "$(stat -c %a "$PROJECT/.env")" = "600" || { echo '.env permissions are not private' >&2; exit 1; }
+PERMS="$(php -r 'echo decoct(fileperms($argv[1]) & 0777);' "$PROJECT/.env")"
+test "$PERMS" = "600" || { echo '.env permissions are not private' >&2; exit 1; }
 
 # The generated secret must be random, valid hex and must differ across projects.
 SECRET="$(sed -n 's/^JWT_SECRET=//p' "$PROJECT/.env")"
