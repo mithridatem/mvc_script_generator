@@ -21,7 +21,7 @@ test ! -f "$PROJECT/template/template_login.php"
 grep -q 'firebase/php-jwt' "$PROJECT/composer.json"
 grep -q 'setMiddlewareResolver' "$PROJECT/public/index.php"
 grep -q "JwtMiddleware::class" "$PROJECT/src/Controller/Api/ProfileController.php"
-if grep -q "session_start(" "$PROJECT/public/index.php"; then
+if grep -Eq "^[[:space:]]*session_start[[:space:]]*\\(" "$PROJECT/public/index.php"; then
   echo "L'API ne doit pas démarrer de session PHP" >&2
   exit 1
 fi
