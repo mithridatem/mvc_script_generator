@@ -5,6 +5,11 @@ Il montre une inscription et une connexion avec séparation des responsabilités
 
 ## Installation
 
+Dépendances déclarées dans `composer.json` : `mithridatem/router:^1.4`,
+`mithridatem/validation:^1.2` et `mithridatem/autowiring:^1.4`.
+La version 1.4 d'autowiring permet également l'enregistrement optionnel de factories objets via `FactoryInterface` ; la factory PDO existante reste inchangée.
+
+
 ```sh
 composer install
 # Modifier .env (notamment DATABASE_PASSWORD) si nécessaire
