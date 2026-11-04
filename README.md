@@ -1,21 +1,18 @@
-# Générateur PHP MVC — Basic et Advanced
+# Générateur MVC PHP — Basic / Advanced Web / API JWT
 
-Projet pédagogique de génération de squelettes PHP avec les librairies open source
-`mithridatem/router`, `mithridatem/validation`, `mithridatem/autowiring`.
+Générateur pédagogique avec [mithridatem/router](https://github.com/evaluationWeb/router-librairie), la librairie de validation et [mithridatem/autowiring](https://github.com/mithridatem/autowiring-library).
 
-## Deux profils
-
-| Profil | Dépendances | Objectif |
+| Profil | Objectif | Authentification |
 |---|---|---|
-| **Basic** | Routing uniquement | Comprendre MVC, contrôleur, service, repository, entité |
-| **Advanced** | Routing, Validation, Autowiring | DTO, contraintes par attributs, injection de dépendances, inscription/connexion, CSRF par formulaire |
+| `basic` | MVC minimal, routing | Aucune |
+| `advanced` | MVC Web avancé, DTO, services, repositories, middleware CSRF | Session PHP + grants |
+| `api-jwt` | API REST JSON, JWT Firebase, middleware d'authentification | Bearer JWT + grants |
 
-Les classes de base sont copiées dans chaque projet et peuvent être modifiées ; elles ne font pas partie d'une quatrième librairie.
+Le profil `advanced` reprend [project_exemple/variant/web-session-csrf](https://github.com/evaluationWeb/project_exemple/tree/variant/web-session-csrf). Le profil `api-jwt` reprend [project_exemple/variant/api-jwt](https://github.com/evaluationWeb/project_exemple/tree/variant/api-jwt). Les adaptations propres au générateur sont conservées.
 
 ## Prérequis
 
-PHP 8.2+, Composer 2, Bash (Linux/macOS ou Git Bash sous Windows).
-Une instance MySQL/MariaDB n'est nécessaire que pour les pages d'authentification du profil Advanced.
+PHP 8.2+, Composer 2 et Bash (Linux/macOS/Git Bash). MySQL ou MariaDB pour les profils `advanced` et `api-jwt`.
 
 ## Utilisation
 
@@ -23,39 +20,34 @@ Une instance MySQL/MariaDB n'est nécessaire que pour les pages d'authentificati
 git clone https://github.com/mithridatem/mvc_script_generator.git
 cd mvc_script_generator
 
-# BAC+2 : router seul, MVC simple
 bash script.sh --profile basic --name demo_basic
+bash script.sh --profile advanced --name demo_web --db-name demo_web
+bash script.sh --profile api-jwt --name demo_api --db-name demo_api
 
-# Licence 3/4 : les 3 librairies
-bash script.sh --profile advanced --name demo_advanced --db-name demo_school
-
-# Mode interactif
-bash script.sh
+# Options
+bash script.sh --help
 ```
 
-Options : `--name`, `--profile`, `--target`, `--no-install`, `--db-host`, `--db-port`, `--db-name`, `--db-user`, `--configure-db`, `--help`.
+Options communes : `--name`, `--profile`, `--target`, `--no-install`, `--db-host`, `--db-port`, `--db-name`, `--db-user`, `--configure-db`, `--help`.
 
-Le script refuse d'écraser un projet existant et ne publie pas les secrets en console.
-Avec `--configure-db`, il demande le mot de passe sans l'afficher (TTY requis).
-Sinon renseigner `DATABASE_PASSWORD` dans le `.env` généré.
-Le fichier `.env` est ignoré par Git.
+Le script refuse l'écrasement d'un projet existant. Pour les deux profils avec BDD, il personnalise `db.sql` et `DATABASE_*`. Avec `--configure-db`, le mot de passe est demandé en mode interactif sans être affiché. Le projet `api-jwt` reçoit automatiquement un secret JWT distinct et aléatoire (`random_bytes(32)`) dans `.env`, ignoré de Git et de permissions `600`.
 
-## Démarrer le projet
+## Démarrage
 
 ```bash
-cd demo_basic  # ou demo_advanced
+cd demo_api # ou demo_web / demo_basic
 composer install
 php -S 127.0.0.1:8000 -t public
 ```
 
-Pour Advanced : importer le script `db.sql` dans MySQL/MariaDB et vérifier les paramètres de `.env`. Voir le README généré.
+Pour les profils avec SQL : importer `db.sql`, puis vérifier le fichier `.env` généré. Documentation détaillée dans chaque dossier `templates/<profil>/README.md`.
 
-## Tests du générateur
+## Vérifications du générateur
 
 ```bash
 bash tests/smoke-basic.sh
 bash tests/smoke-advanced.sh
+bash tests/smoke-api-jwt.sh
 ```
 
-Ces tests vérifient les fichiers, les paramètres et la syntaxe PHP (sans dépendances).
-Après installation Composer, exécuter les tests et les parcours HTTP indiqués dans le README du projet généré. Le profil Advanced suit la branche `main` de `evaluationWeb/project_exemple` pour le parcours d'authentification et la gestion CSRF ; les placeholders de configuration et les correctifs d'hydratation propres au générateur sont conservés.
+Les smoke tests valident la génération, la syntaxe PHP, les structures de profils et la configuration sans base SQL. Le workflow GitHub Actions installe aussi les dépendances et exécute les tests des projets générés. Pour un déploiement public, revoir sécurité, secrets, HTTPS, rate limiting et gestion d'erreurs.
