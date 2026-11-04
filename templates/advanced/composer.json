@@ -7,7 +7,7 @@
     "ext-pdo_mysql": "*",
     "mithridatem/router": "^1.4",
     "mithridatem/validation": "^1.2",
-    "mithridatem/autowiring": "^1.2",
+    "mithridatem/autowiring": "^1.4",
     "vlucas/phpdotenv": "^5.7"
   },
   "autoload": {
