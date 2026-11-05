@@ -2,7 +2,7 @@
 
 > **Objectif :** développer une application Web PHP avec séparation des responsabilités, DTO, validation, services, repository PDO, injection de dépendances, session et protection CSRF.
 
-Ce guide décrit **les fichiers effectivement générés**. Le bootstrap allégé `Application / RouterFactory`, récemment mis en place dans `project_exemple/main`, n'est pas encore synchronisé ici : dans ce squelette, la configuration Web se trouve encore dans `public/index.php`.
+Ce guide décrit **les fichiers effectivement générés**, désormais synchronisés avec le bootstrap léger `Application / RouterFactory` de `project_exemple/main`.
 
 ## 1. Préparer l'environnement
 
@@ -26,8 +26,8 @@ Visiter `/`, `/register` puis `/login`. L'inscription crée un compte ; la conne
 POST /login (formulaire HTML + csrf_token)
       |
       v
-public/index.php
-  session + dotenv + Container + Router
+public/index.php → Application
+  WebBootstrap (session + dotenv) → Container → RouterFactory
       |
       v
 #[Route(..., middleware: [CsrfMiddleware::class])]
@@ -51,7 +51,11 @@ Un jeton CSRF absent ou invalide est rejeté **avant** l'exécution du contrôle
 
 | Composant | Rôle |
 | --- | --- |
-| `public/index.php` | Démarre la session, charge les services et crée le routeur |
+| `public/index.php` | Point d'entrée minimal : crée et lance `Application` |
+| `src/Kernel/Application.php` | Orchestre le bootstrap, le conteneur et le dispatch |
+| `src/Kernel/WebBootstrap.php` | Charge l'environnement, les en-têtes et la session PHP |
+| `src/Kernel/RouterFactory.php` | Configure le routeur, les middlewares, les grants et la découverte des routes |
+| `src/Kernel/WebErrorHandler.php` | Transforme les exceptions en réponses HTML échappées |
 | `config/service.php` | Déclare la factory PDO et les paramètres du service d'upload |
 | `src/Controller/` | Actions HTTP, rendu des templates et redirections |
 | `src/DTO/` | Objets représentant les données d'entrée |
@@ -112,6 +116,7 @@ Pour un paramètre scalaire, utiliser `configure()`, comme pour `UploadFileServi
 ## 7. Tests et vérifications
 
 ```bash
+php tests/web_kernel_test.php
 php tests/login_input_test.php
 php tests/register_user_input_test.php
 php tests/csrf_token_manager_test.php
