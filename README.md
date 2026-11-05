@@ -8,7 +8,7 @@ Générateur pédagogique avec [mithridatem/router](https://github.com/evaluatio
 | `advanced` | MVC Web avancé, DTO, services, repositories, middleware CSRF | Session PHP + grants |
 | `api-jwt` | API REST JSON, JWT Firebase, middleware d'authentification | Bearer JWT + grants |
 
-Le profil `advanced` reprend [project_exemple/variant/web-session-csrf](https://github.com/evaluationWeb/project_exemple/tree/variant/web-session-csrf). Le profil `api-jwt` reprend [project_exemple/variant/api-jwt](https://github.com/evaluationWeb/project_exemple/tree/variant/api-jwt). Les adaptations propres au générateur sont conservées.
+Le profil `advanced` reprend [project_exemple/main](https://github.com/evaluationWeb/project_exemple/tree/main). Le profil `api-jwt` reprend [project_exemple/variant/api-jwt](https://github.com/evaluationWeb/project_exemple/tree/variant/api-jwt). Les adaptations propres au générateur sont conservées.
 
 ## Prérequis
 
@@ -55,3 +55,9 @@ Les smoke tests valident la génération, la syntaxe PHP, les structures de prof
 ## Guides embarqués
 
 Chaque projet généré contient un guide pratique dans `docs/guide-utilisation.md` : prise en main, parcours d'une requête, architecture, extension et vérifications. Les guides sont adaptés à chaque profil (`basic`, `advanced`, `api-jwt`) et sont copiés automatiquement avec le squelette. Les README restent des instructions de démarrage rapide.
+
+## Bootstrap léger synchronisé
+
+Les profils `advanced` et `api-jwt` reprennent désormais l'architecture validée dans les deux branches de `project_exemple` : un `public/index.php` minimal qui démarre `App\\Kernel\\Application`, une `RouterFactory` et un bootstrap/gestionnaire d'erreurs spécifiques au type d'application.
+
+Le profil `basic` est volontairement **inchangé**. Les guides `docs/guide-utilisation.md` et les tests de bootstrap sont inclus dans les projets générés.
