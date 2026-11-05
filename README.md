@@ -51,3 +51,7 @@ bash tests/smoke-api-jwt.sh
 ```
 
 Les smoke tests valident la génération, la syntaxe PHP, les structures de profils et la configuration sans base SQL. Le workflow GitHub Actions installe aussi les dépendances et exécute les tests des projets générés. Pour un déploiement public, revoir sécurité, secrets, HTTPS, rate limiting et gestion d'erreurs.
+
+## Guides embarqués
+
+Chaque projet généré contient un guide pratique dans `docs/guide-utilisation.md` : prise en main, parcours d'une requête, architecture, extension et vérifications. Les guides sont adaptés à chaque profil (`basic`, `advanced`, `api-jwt`) et sont copiés automatiquement avec le squelette. Les README restent des instructions de démarrage rapide.
