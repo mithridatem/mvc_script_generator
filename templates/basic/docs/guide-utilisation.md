@@ -45,9 +45,9 @@ AbstractController::render() -> templates/home.php -> HTML
 
 ## 3. Ajouter une page sans conteneur
 
-**Exemple :** une page `/bonjour` qui appelle `ExampleService`.
+**Exemple :** une page `/salut` qui appelle `ExampleService`.
 
-Créer `src/Controller/BonjourController.php` :
+Créer `src/Controller/SalutController.php` :
 
 ```php
 <?php
@@ -59,9 +59,9 @@ namespace App\Controller;
 use App\Service\ExampleService;
 use Mithridatem\Routing\Attribute\Route;
 
-final class BonjourController extends AbstractController
+final class SalutController extends AbstractController
 {
-    #[Route(path: '/bonjour', method: 'GET', grants: [])]
+    #[Route(path: '/salut', method: 'GET', grants: [])]
     public function index(): void
     {
         $service = new ExampleService();
@@ -71,7 +71,7 @@ final class BonjourController extends AbstractController
 }
 ```
 
-Créer `templates/bonjour.php` :
+Créer `templates/salut.php` :
 
 ```php
 <h1><?= htmlspecialchars($message, ENT_QUOTES, 'UTF-8') ?></h1>
@@ -79,9 +79,48 @@ Créer `templates/bonjour.php` :
 
 La découverte par attributs est automatique : **inutile d'ajouter manuellement la route dans `index.php`**.
 
-Tester `http://127.0.0.1:8000/bonjour`.
+Tester `http://127.0.0.1:8000/salut`.
 
-## 4. Où placer la logique ?
+## 4. Exemple fourni : formulaire GET/POST avec RequestInterface
+
+Le projet généré propose **déjà** la page [http://127.0.0.1:8000/bonjour](http://127.0.0.1:8000/bonjour). Elle permet d'observer comment recevoir des données sans manipuler directement la superglobale `$_POST`.
+
+- `templates/form.php` : formulaire HTML `method="post"`, champ `name="name"`.
+- `src/Controller/FormController.php` : une action associée aux méthodes GET et POST.
+- `src/Service/ExampleService.php` : prépare le message de bienvenue.
+
+Le contrôleur utilise :
+
+```php
+use Mithridatem\\Routing\\Http\\RequestInterface;
+
+#[Route(path: '/bonjour', method: 'GET', grants: [])]
+#[Route(path: '/bonjour', method: 'POST', grants: [])]
+public function bonjour(RequestInterface $request): void
+{
+    $name = '';
+
+    if ($this->isFormSubmitted($request)) {
+        $value = $request->post('name', '');
+        // Vérifier que la valeur reçue est une chaîne non vide.
+        // Puis appeler ExampleService et rendre la vue.
+    }
+}
+```
+
+**À retenir :** `$request->getMethod()` permet de connaître la méthode HTTP ; `$request->post('name', '')` lit le champ du formulaire et fournit une valeur par défaut. La méthode `isFormSubmitted()` de `AbstractController` utilise également `RequestInterface`.
+
+Le code fourni gère la saisie vide ou inattendue (par exemple un tableau au lieu d'un texte), puis échappe le contenu dynamique avec `htmlspecialchars()` lors du rendu. Ce contrôle simple **ne remplace pas** une validation métier complète.
+
+Tester le résultat en navigateur, puis lancer :
+
+```bash
+php tests/form_request_test.php
+```
+
+Ce formulaire est volontairement **pédagogique et sans protection CSRF**. Il ne doit pas servir tel quel à modifier des données sensibles ou à déclencher des actions critiques. Le profil Advanced présente la protection CSRF via middleware.
+
+## 5. Où placer la logique ?
 
 - **Controller :** lit la requête, sollicite les services, choisit la réponse.
 - **Service :** applique les règles métier, sans produire de HTML.
@@ -90,11 +129,11 @@ Tester `http://127.0.0.1:8000/bonjour`.
 
 Le `new ExampleService()` est volontairement explicite : il sert à apprendre la composition d'objets avant de découvrir l'autowiring.
 
-## 5. Vérifications et pièges fréquents
+## 6. Vérifications et pièges fréquents
 
 ```bash
 php -l public/index.php
-php -l src/Controller/BonjourController.php
+php -l src/Controller/SalutController.php
 ```
 
 - **404 :** contrôler le chemin déclaré dans `#[Route]` et le nom du contrôleur.
@@ -102,7 +141,7 @@ php -l src/Controller/BonjourController.php
 - **Classe introuvable :** vérifier `namespace App\...`, l'arborescence et `composer install`.
 - **XSS :** échapper les valeurs affichées dans les templates avec `htmlspecialchars()`.
 
-## 6. Pour aller plus loin
+## 7. Pour aller plus loin
 
 Exercices suggérés : page avec paramètre, service de calcul, puis repository PDO. Lorsque plusieurs services dépendent les uns des autres, passer au profil **Advanced**, qui illustre l'injection automatique de dépendances.
 
