@@ -7,6 +7,9 @@ bash "$ROOT/bin/create-project.sh" --name DemoAdvanced --profile advanced --db-n
 
 PROJECT="$TMP/DemoAdvanced"
 test -f "$PROJECT/.env"
+test -s "$PROJECT/docs/guide-utilisation.md"
+grep -q "Profil Advanced Web" "$PROJECT/docs/guide-utilisation.md"
+grep -q 'docs/guide-utilisation.md' "$PROJECT/README.md"
 test -f "$PROJECT/src/Controller/LoginController.php"
 test -f "$PROJECT/src/DTO/RegisterUserInput.php"
 test -f "$PROJECT/src/Security/PasswordHasher.php"
