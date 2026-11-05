@@ -35,11 +35,18 @@ curl http://127.0.0.1:8000/api/profile \
 
 ## Architecture
 
+- `public/index.php` : front controller minimal.
+- `src/Kernel/Application.php` : orchestration du démarrage.
+- `src/Kernel/ApiBootstrap.php` : chargement de l'environnement et en-têtes JSON.
+- `src/Kernel/RouterFactory.php` : configuration du routeur, du middleware d'authentification et des grants.
+- `src/Kernel/ApiErrorHandler.php` : erreurs HTTP rendues en JSON.
+
 `Controller/Api` : endpoints JSON ; `Security/Jwt` : émission et validation ; `Security/Authentication` : identité pendant la requête ; `Middleware` : contrôle transversal ; `Repository` : PDO ; `Service` : métier.
 
 ## Vérification
 
 ```sh
+php tests/api_kernel_test.php
 php tests/login_input_test.php
 php tests/jwt_api_routes_test.php
 php tests/jwt_authentication_test.php
