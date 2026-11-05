@@ -4,7 +4,7 @@
 
 Après génération, consulter **[docs/guide-utilisation.md](docs/guide-utilisation.md)** pour comprendre le parcours des requêtes, le rôle des composants et ajouter une fonctionnalité pas à pas.
 
-Profil pédagogique basé sur [project_exemple / variant/web-session-csrf](https://github.com/evaluationWeb/project_exemple/tree/variant/web-session-csrf).
+Profil pédagogique basé sur [project_exemple / main](https://github.com/evaluationWeb/project_exemple/tree/main), consacré au Web avec sessions et CSRF.
 
 Il utilise `mithridatem/router`, `mithridatem/validation` et `mithridatem/autowiring`. Authentification HTML en session PHP, `grants` de routes et vérification CSRF dans le **middleware** (plus dans les contrôleurs).
 
@@ -21,7 +21,11 @@ Parcours : `GET /login`, `POST /login`, `GET /register`, `POST /register`. Les r
 
 ## Architecture
 
-- `public/index.php` : session, conteneur, routeur, résolution middleware.
+- `public/index.php` : point d'entrée minimal, lance `Application`.
+- `src/Kernel/Application.php` : orchestration du démarrage.
+- `src/Kernel/WebBootstrap.php` : chargement de l'environnement, en-têtes et session PHP.
+- `src/Kernel/RouterFactory.php` : routeur, résolveurs, grants et découverte des routes.
+- `src/Kernel/WebErrorHandler.php` : traitement centralisé des exceptions HTML.
 - `src/Middleware/CsrfMiddleware.php` : vérification des tokens avant exécution du contrôleur.
 - `src/Middleware/ContainerMiddlewareResolver.php` : adaptation au conteneur autowiring.
 - `src/Security/CsrfTokenManager.php` : génération et validation par session.
@@ -34,6 +38,7 @@ La correction d'hydratation de l'entité `User`, le DSN MySQL et les placeholder
 ## Tests
 
 ```bash
+php tests/web_kernel_test.php
 php tests/login_input_test.php
 php tests/register_user_input_test.php
 php tests/csrf_token_manager_test.php
