@@ -8,6 +8,9 @@ bash "$ROOT/bin/create-project.sh" --profile api-jwt --name DemoApi --db-name de
 PROJECT="$TMP/DemoApi"
 
 test -f "$PROJECT/public/index.php"
+test -s "$PROJECT/docs/guide-utilisation.md"
+grep -q "Profil API JWT" "$PROJECT/docs/guide-utilisation.md"
+grep -q 'docs/guide-utilisation.md' "$PROJECT/README.md"
 test -f "$PROJECT/src/Controller/Api/AuthController.php"
 test -f "$PROJECT/src/Controller/Api/ProfileController.php"
 test -f "$PROJECT/src/Middleware/JwtMiddleware.php"
