@@ -6,4 +6,5 @@
 <p>Votre projet PHP MVC Basic est prêt.</p>
 <p><?= htmlspecialchars($data['message'] ?? '', ENT_QUOTES, 'UTF-8') ?></p>
 <p>Ajoutez un contrôleur, une vue et des routes avec #[Route].</p>
+<p><a href="/bonjour">Tester le formulaire avec RequestInterface</a></p>
 </body></html>
