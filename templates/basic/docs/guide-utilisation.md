@@ -66,7 +66,7 @@ final class SalutController extends AbstractController
     {
         $service = new ExampleService();
         $message = $service->greet('visiteur');
-        $this->render('bonjour', 'Bonjour', ['message' => $message]);
+        $this->render('salut', 'Bonjour', ['message' => $message]);
     }
 }
 ```
@@ -74,7 +74,7 @@ final class SalutController extends AbstractController
 Créer `templates/salut.php` :
 
 ```php
-<h1><?= htmlspecialchars($message, ENT_QUOTES, 'UTF-8') ?></h1>
+<h1><?= htmlspecialchars($data['message'], ENT_QUOTES, 'UTF-8') ?></h1>
 ```
 
 La découverte par attributs est automatique : **inutile d'ajouter manuellement la route dans `index.php`**.
@@ -92,7 +92,7 @@ Le projet généré propose **déjà** la page [http://127.0.0.1:8000/bonjour](h
 Le contrôleur utilise :
 
 ```php
-use Mithridatem\\Routing\\Http\\RequestInterface;
+use Mithridatem\Routing\Http\RequestInterface;
 
 #[Route(path: '/bonjour', method: 'GET', grants: [])]
 #[Route(path: '/bonjour', method: 'POST', grants: [])]
