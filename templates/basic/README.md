@@ -13,6 +13,19 @@ php -S 127.0.0.1:8000 -t public
 
 Ouvrez http://127.0.0.1:8000/.
 
+### Exemple de formulaire
+
+La page **http://127.0.0.1:8000/bonjour** propose un formulaire accessible en GET et traité en POST par `FormController::bonjour(RequestInterface $request)`.
+
+Le contrôleur utilise `$request->post('name', '')` plutôt que `$_POST`, puis appelle `ExampleService` pour construire le message. Le template `templates/form.php` échappe les données affichées. Voir le guide pour le parcours détaillé.
+
+Pour lancer le test après `composer install` :
+
+```bash
+php tests/form_request_test.php
+```
+
+
 - `public/index.php` : routeur et point d'entrée.
 - `src/Controller` : entrée/sortie HTTP.
 - `src/Service` : logique métier.
