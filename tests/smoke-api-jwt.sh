@@ -22,9 +22,17 @@ test ! -f "$PROJECT/src/Middleware/CsrfMiddleware.php"
 test ! -f "$PROJECT/src/Controller/LoginController.php"
 test ! -f "$PROJECT/template/template_login.php"
 grep -q 'firebase/php-jwt' "$PROJECT/composer.json"
-grep -q 'setMiddlewareResolver' "$PROJECT/public/index.php"
+grep -q 'new Application' "$PROJECT/public/index.php"
+test -f "$PROJECT/src/Kernel/Application.php"
+test -f "$PROJECT/src/Kernel/RouterFactory.php"
+test -f "$PROJECT/src/Kernel/ApiBootstrap.php"
+test -f "$PROJECT/src/Kernel/ApiErrorHandler.php"
+test -f "$PROJECT/tests/api_kernel_test.php"
+grep -q 'setMiddlewareResolver' "$PROJECT/src/Kernel/RouterFactory.php"
+grep -q 'RequestAuthenticationMiddleware::class' "$PROJECT/src/Kernel/RouterFactory.php"
+! grep -q 'new Router' "$PROJECT/public/index.php"
 grep -q "JwtMiddleware::class" "$PROJECT/src/Controller/Api/ProfileController.php"
-if grep -Eq "^[[:space:]]*session_start[[:space:]]*\\(" "$PROJECT/public/index.php"; then
+if grep -R -Eq "^[[:space:]]*session_start[[:space:]]*\\(" "$PROJECT/src/Kernel" "$PROJECT/public/index.php"; then
   echo "L'API ne doit pas démarrer de session PHP" >&2
   exit 1
 fi
