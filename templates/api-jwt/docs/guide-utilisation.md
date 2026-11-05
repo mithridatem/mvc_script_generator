@@ -2,7 +2,7 @@
 
 > **Objectif :** créer une API REST PHP renvoyant du JSON, avec authentification Bearer JWT, contrôle des rôles, séparation Controller / Service / Repository et aucun état de session PHP.
 
-Ce guide décrit **le squelette actuel**. Le refactoring `Application / ApiBootstrap / RouterFactory / ApiErrorHandler` validé dans `project_exemple:variant/api-jwt` n'a pas encore été intégré au template du générateur : ici, `public/index.php` assemble directement le routeur.
+Ce guide décrit **le squelette actuel**, synchronisé avec `project_exemple:variant/api-jwt`. Le bootstrap léger `Application / ApiBootstrap / RouterFactory / ApiErrorHandler` est intégré au projet généré.
 
 ## 1. Installation
 
@@ -60,7 +60,11 @@ Le client doit transmettre l'en-tête `Authorization` à chaque appel protégé.
 
 | Composant | Rôle |
 | --- | --- |
-| `public/index.php` | Point d'entrée, initialisation du routeur et gestion des erreurs JSON |
+| `public/index.php` | Point d'entrée minimal : lance `Application` |
+| `src/Kernel/Application.php` | Orchestre l'initialisation du conteneur, du routeur et le dispatch |
+| `src/Kernel/ApiBootstrap.php` | Charge l'environnement et positionne les en-têtes JSON |
+| `src/Kernel/RouterFactory.php` | Configure le pipeline JWT, les grants et la découverte des routes |
+| `src/Kernel/ApiErrorHandler.php` | Convertit les exceptions en réponses JSON HTTP sans divulguer les erreurs internes |
 | `config/service.php` | Configuration du conteneur, fabrique PDO et paramètres JWT |
 | `src/Controller/Api/` | Endpoints et sérialisation des réponses |
 | `src/DTO/LoginInput.php` | Normalisation des données du login |
@@ -114,6 +118,7 @@ Les contrôles de signature, de date d'expiration et des claims JWT sont effectu
 ## 7. Tests
 
 ```bash
+php tests/api_kernel_test.php
 php tests/login_input_test.php
 php tests/jwt_api_routes_test.php
 php tests/jwt_authentication_test.php
