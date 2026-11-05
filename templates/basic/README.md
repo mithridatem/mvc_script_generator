@@ -1,5 +1,9 @@
 # MVC Basic
 
+## Guide pas à pas
+
+Après génération, consulter **[docs/guide-utilisation.md](docs/guide-utilisation.md)** pour comprendre le parcours des requêtes, le rôle des composants et ajouter une fonctionnalité pas à pas.
+
 Ce projet utilise seulement `mithridatem/router` : pas de conteneur ni de librairie de validation.
 
 ```sh
