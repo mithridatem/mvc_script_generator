@@ -27,7 +27,7 @@ POST /login (formulaire HTML + csrf_token)
       |
       v
 public/index.php → Application
-  WebBootstrap (session + dotenv) → Container → RouterFactory
+  WebBootstrap → EnvironmentLoader (dev/test/prod) + session → Container → RouterFactory
       |
       v
 #[Route(..., middleware: [CsrfMiddleware::class])]
@@ -53,7 +53,8 @@ Un jeton CSRF absent ou invalide est rejeté **avant** l'exécution du contrôle
 | --- | --- |
 | `public/index.php` | Point d'entrée minimal : crée et lance `Application` |
 | `src/Kernel/Application.php` | Orchestre le bootstrap, le conteneur et le dispatch |
-| `src/Kernel/WebBootstrap.php` | Charge l'environnement, les en-têtes et la session PHP |
+| `src/Kernel/WebBootstrap.php` | Initialise les en-têtes et la session PHP | 
+| `src/Kernel/EnvironmentLoader.php` | Sélectionne les fichiers locaux en dev/test, et les variables serveur uniquement en prod |
 | `src/Kernel/RouterFactory.php` | Configure le routeur, les middlewares, les grants et la découverte des routes |
 | `src/Kernel/WebErrorHandler.php` | Transforme les exceptions en réponses HTML échappées |
 | `config/service.php` | Déclare la factory PDO et les paramètres du service d'upload |
@@ -85,7 +86,7 @@ public function catalogue(): mixed
 
 Les `grants` permettent de demander un rôle. Dans ce profil, ils sont construits depuis `$_SESSION['user']['grant']` par `ArrayGrantChecker`.
 
-Une route `POST` avec formulaire sensible doit être protégée. **Attention :** `CsrfMiddleware` fourni dans ce squelette ne connaît que les formulaires `/login` et `/register`. Il ne suffit donc pas de le copier tel quel sur `/catalogue` : il faut adapter explicitement la correspondance route → identifiant de formulaire et générer le jeton correspondant.
+Les contrôleurs peuvent regrouper leurs routes avec `#[RouteGroup(prefix: '/login')]` et des méthodes `#[Route(path: '/', method: 'GET'|'POST')]`. Une route POST avec formulaire sensible doit être protégée par `CsrfMiddleware` **sur l'action POST uniquement**. Le middleware est générique : générer le token avec le chemin public de soumission (ex. `$this->csrf->generate('/catalogue')`) puis placer `CsrfMiddleware` sur cette route POST. Aucun registre de formulaires n'est à modifier. Voir `docs/route-groups-web.md`.
 
 ## 5. Exemple de parcours : inscription
 
@@ -116,6 +117,7 @@ Pour un paramètre scalaire, utiliser `configure()`, comme pour `UploadFileServi
 ## 7. Tests et vérifications
 
 ```bash
+php tests/environment_loader_test.php
 php tests/web_kernel_test.php
 php tests/login_input_test.php
 php tests/register_user_input_test.php
@@ -139,3 +141,7 @@ Tester également en navigateur avec une vraie base de données : formulaire val
 - Le squelette est pédagogique et doit être complété par des tests d'intégration selon le projet.
 
 **Pour les détails :** consulter `docs/csrf-middleware.md`, puis le code réel de `LoginController`, `CsrfMiddleware` et `UserService`.
+
+## 9. Déploiement et environnement
+
+`APP_ENV=dev` charge `.env` ; `APP_ENV=test` charge `.env.test`. En production, définir `APP_ENV=prod` dans l'hébergement et injecter directement les variables d'environnement : aucun fichier dotenv n'est lu. Le générateur crée uniquement un `.env` **local ignoré par Git**. Guide complet : `docs/environments.md`.
