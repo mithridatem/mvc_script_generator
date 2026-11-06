@@ -27,6 +27,10 @@ for profile in basic advanced api-jwt; do
   test -f "$TMP/projects with spaces/$name/docs/guide-utilisation.md"
 done
 test -f "$TMP/projects with spaces/composer_api_jwt/.env"
+# Regression: macOS Bash 3.2 does not support lowercase parameter expansion.
+"$BIN_DIR/mvc" --profile basic --name DemoUpperCase --target "$TMP/projects with spaces" --no-install
+test -d "$TMP/projects with spaces/DemoUpperCase"
+grep -q demouppercase "$TMP/projects with spaces/DemoUpperCase/composer.json"
 # Backwards compatibility with the historical entry point.
 bash "$ROOT/script.sh" --help | grep -q 'Usage:'
 composer global remove mithridatem/mvc-script-generator --no-interaction --no-progress
