@@ -45,7 +45,7 @@ curl -i -X POST http://127.0.0.1:8000/api/login \
   -d '{"email":"utilisateur@example.test","password":"mot-de-passe"}'
 ```
 
-Si les identifiants sont corrects, le serveur répond avec un `access_token`, un `token_type` Bearer et un `expires_in` de 900 secondes (15 minutes).
+Si les identifiants sont corrects, le serveur répond avec un `access_token`, un `token_type` Bearer et un `expires_in` configuré par `JWT_TTL_SECONDS` (900 secondes par défaut).
 
 **Profil protégé :**
 
@@ -62,7 +62,8 @@ Le client doit transmettre l'en-tête `Authorization` à chaque appel protégé.
 | --- | --- |
 | `public/index.php` | Point d'entrée minimal : lance `Application` |
 | `src/Kernel/Application.php` | Orchestre l'initialisation du conteneur, du routeur et le dispatch |
-| `src/Kernel/ApiBootstrap.php` | Charge l'environnement et positionne les en-têtes JSON |
+| `src/Kernel/ApiBootstrap.php` | Initialise les en-têtes JSON | 
+| `src/Kernel/EnvironmentLoader.php` | Sélectionne les fichiers locaux en dev/test, et les variables serveur uniquement en prod |
 | `src/Kernel/RouterFactory.php` | Configure le pipeline JWT, les grants et la découverte des routes |
 | `src/Kernel/ApiErrorHandler.php` | Convertit les exceptions en réponses JSON HTTP sans divulguer les erreurs internes |
 | `config/service.php` | Configuration du conteneur, fabrique PDO et paramètres JWT |
@@ -79,28 +80,26 @@ Le contrôleur ne doit pas effectuer directement la vérification cryptographiqu
 
 ## 5. Ajouter une route protégée
 
-Créer un contrôleur sous `src/Controller/Api/` en déclarant la route :
+Pour une route privée, déclarer les exigences sur le groupe du contrôleur :
 
 ```php
 use App\Middleware\JwtMiddleware;
 use Mithridatem\Routing\Attribute\Route;
+use Mithridatem\Routing\Attribute\RouteGroup;
 
-#[Route(
-    path: '/api/private',
-    method: 'GET',
-    grants: ['ROLE_USER'],
-    middleware: [JwtMiddleware::class]
-)]
-public function privateEndpoint(): void
+#[RouteGroup(prefix: '/api', grants: ['ROLE_USER'], middleware: [JwtMiddleware::class])]
+final class PrivateController
 {
-    header('Content-Type: application/json; charset=utf-8');
-    echo json_encode(['message' => 'Accès autorisé'], JSON_THROW_ON_ERROR);
+    #[Route(path: '/private', method: 'GET')]
+    public function privateEndpoint(): void
+    {
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode(['message' => 'Accès autorisé'], JSON_THROW_ON_ERROR);
+    }
 }
 ```
 
-Cette méthode doit être placée dans une **classe de contrôleur réelle**, sous le namespace `App\Controller\Api`. La découverte automatique chargera l'attribut `Route`.
-
-**Très important :** ajouter `grants` sans `JwtMiddleware` sur une nouvelle route protégée n'est pas une configuration d'authentification suffisante. Ajouter explicitement le middleware JWT à chaque endpoint nécessitant un Bearer token.
+Ce contrôleur doit se trouver dans `App\Controller\Api`. Toutes ses actions héritent du middleware JWT et de `ROLE_USER`. **Les routes publiques (comme `POST /api/login`) doivent vivre dans un groupe séparé** : `grants: []` sur une méthode ne neutralise pas les grants de groupe. Voir `docs/jwt-api.md`.
 
 ## 6. Comprendre les réponses HTTP
 
@@ -118,6 +117,7 @@ Les contrôles de signature, de date d'expiration et des claims JWT sont effectu
 ## 7. Tests
 
 ```bash
+php tests/environment_loader_test.php
 php tests/api_kernel_test.php
 php tests/login_input_test.php
 php tests/jwt_api_routes_test.php
@@ -136,3 +136,7 @@ Tests manuels conseillés : identifiants erronés, JSON invalide, profil sans en
 - Le squelette ne gère pas automatiquement tous les scénarios d'erreur métier : compléter les tests d'intégration et les contrôles de sécurité.
 
 Voir aussi `docs/jwt-api.md` pour les choix d'authentification et les limites de ce POC.
+
+## 9. Déploiement et environnement
+
+Le générateur produit un secret JWT aléatoire dans `.env` pour le développement uniquement. En production, **ne pas copier ce fichier** : définir `APP_ENV=prod` et injecter un `JWT_SECRET` distinct (ainsi que les variables SQL et JWT) dans l'environnement serveur. `EnvironmentLoader` n'ouvre aucun fichier dotenv en mode prod. Voir `docs/environments.md`.
