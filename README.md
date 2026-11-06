@@ -14,6 +14,53 @@ Le profil `advanced` reprend [project_exemple/main](https://github.com/evaluatio
 
 PHP 8.2+, Composer 2 et Bash (Linux/macOS/Git Bash). MySQL ou MariaDB pour les profils `advanced` et `api-jwt`.
 
+## Installation globale avec Composer (recommandée)
+
+Le moteur de génération **reste en Bash**. Composer installe seulement le package
+et expose la commande `mvc` dans son répertoire global d'exécutables.
+
+> Publication Packagist : le package devra d'abord être enregistré sur
+> [packagist.org](https://packagist.org/) et une version Git publiée.
+> Avant cette publication, utiliser la méthode locale ci-dessous.
+
+```bash
+composer global require mithridatem/mvc-script-generator
+```
+
+Ajouter le répertoire global `bin` de Composer au `PATH` si nécessaire :
+
+```bash
+composer global config bin-dir --absolute
+# Ajouter le répertoire affiché au PATH de votre terminal
+```
+
+Sous Git Bash (Windows), conserver PHP, Composer et Git Bash dans le `PATH`.
+Pour rendre un ajout au `PATH` persistant, modifier `~/.bashrc`, et s'assurer
+que `~/.bash_profile` le charge lorsque Git Bash démarre en login shell.
+Le chemin global peut différer entre Windows, Linux et macOS : ne pas supposer
+que `~/.config/composer/vendor/bin` est toujours le bon chemin.
+
+```bash
+mvc --help
+cd ~/projets
+mvc --profile basic --name demo
+mvc --profile advanced --name bibliotheque
+mvc --profile api-jwt --name api_books
+```
+
+Pour mettre à jour ou désinstaller le package :
+
+```bash
+composer global update mithridatem/mvc-script-generator
+composer global remove mithridatem/mvc-script-generator
+```
+
+**Attention :** si `install-local.sh` a déjà installé `~/.local/bin/mvc`,
+il peut prendre la priorité sur le lanceur Composer. Contrôler avec
+`command -v mvc` ou `type -a mvc`; supprimer l'ancien lanceur avec
+`rm ~/.local/bin/mvc` uniquement si vous souhaitez passer à Composer.
+Les projets créés précédemment ne sont pas modifiés.
+
 ## Installation locale : commande `mvc` (sans Packagist)
 
 Cloner le générateur **une seule fois** dans un dossier permanent :
@@ -120,6 +167,7 @@ Pour les profils avec SQL : importer `db.sql`, puis vérifier le fichier `.env` 
 
 ```bash
 bash tests/smoke-local-cli.sh
+bash tests/smoke-composer-global.sh
 bash tests/smoke-basic.sh
 bash tests/smoke-advanced.sh
 bash tests/smoke-api-jwt.sh
