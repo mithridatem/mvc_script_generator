@@ -16,50 +16,53 @@ PHP 8.2+, Composer 2 et Bash (Linux/macOS/Git Bash). MySQL ou MariaDB pour les p
 
 ## Installation globale avec Composer (recommandée)
 
-Le moteur de génération **reste en Bash**. Composer installe seulement le package
-et expose la commande `mvc` dans son répertoire global d'exécutables.
-
-> Publication Packagist : le package devra d'abord être enregistré sur
-> [packagist.org](https://packagist.org/) et une version Git publiée.
-> Avant cette publication, utiliser la méthode locale ci-dessous.
+Le générateur est publié sur **[Packagist](https://packagist.org/packages/mithridatem/mvc-script-generator)**. Composer installe la commande `mvc` ; **le moteur reste entièrement en Bash**.
 
 ```bash
 composer global require mithridatem/mvc-script-generator
+mvc --help
 ```
 
-Ajouter le répertoire global `bin` de Composer au `PATH` si nécessaire :
+**Si `mvc` n'est pas reconnu**, ajouter le répertoire global `vendor/bin` de Composer au `PATH` de votre shell :
 
 ```bash
 composer global config bin-dir --absolute
-# Ajouter le répertoire affiché au PATH de votre terminal
 ```
 
-Sous Git Bash (Windows), conserver PHP, Composer et Git Bash dans le `PATH`.
-Pour rendre un ajout au `PATH` persistant, modifier `~/.bashrc`, et s'assurer
-que `~/.bash_profile` le charge lorsque Git Bash démarre en login shell.
-Le chemin global peut différer entre Windows, Linux et macOS : ne pas supposer
-que `~/.config/composer/vendor/bin` est toujours le bon chemin.
+Sous **Windows avec Git Bash**, ouvrir `~/.bashrc` avec `nano ~/.bashrc` et ajouter **une seule fois** :
 
 ```bash
+# Binaires Composer globaux — Git Bash Windows
+COMPOSER_GLOBAL_BIN="$(composer global config bin-dir --absolute 2>/dev/null | tail -n 1)"
+if [ -n "$COMPOSER_GLOBAL_BIN" ]; then
+  COMPOSER_GLOBAL_BIN="$(cygpath -u "$COMPOSER_GLOBAL_BIN")"
+  export PATH="$COMPOSER_GLOBAL_BIN:$PATH"
+fi
+```
+
+Puis lancer :
+
+```bash
+source ~/.bashrc
+hash -r
+type -a mvc
 mvc --help
-cd ~/projets
-mvc --profile basic --name demo
-mvc --profile advanced --name bibliotheque
-mvc --profile api-jwt --name api_books
 ```
 
-Pour mettre à jour ou désinstaller le package :
+Cela fonctionne également lorsque Composer est installé sous `AppData/Roaming/Composer` ; inutile d'inscrire un nom d'utilisateur Windows en dur. Pour Linux, macOS, les shells qui ne chargent pas `~/.bashrc` et la migration depuis l'ancienne installation locale, voir **[le guide complet d'installation et de configuration du PATH](docs/installation-composer.md)**.
 
 ```bash
+# Créer un projet depuis le dossier courant
+mvc --profile basic --name demo_basic
+mvc --profile advanced --name demo_web
+mvc --profile api-jwt --name demo_api
+
+# Mise à jour et désinstallation du générateur
 composer global update mithridatem/mvc-script-generator
 composer global remove mithridatem/mvc-script-generator
 ```
 
-**Attention :** si `install-local.sh` a déjà installé `~/.local/bin/mvc`,
-il peut prendre la priorité sur le lanceur Composer. Contrôler avec
-`command -v mvc` ou `type -a mvc`; supprimer l'ancien lanceur avec
-`rm ~/.local/bin/mvc` uniquement si vous souhaitez passer à Composer.
-Les projets créés précédemment ne sont pas modifiés.
+**Migration depuis `install-local.sh` :** vérifier `type -a mvc` ; l'ancien lanceur `~/.local/bin/mvc` peut prendre la priorité sur celui de Composer. Le retirer avec `rm ~/.local/bin/mvc` uniquement si vous avez décidé de ne plus utiliser l'installation locale. Ne pas supprimer le dossier `~/.local/bin` lui-même.
 
 ## Installation locale : commande `mvc` (sans Packagist)
 
@@ -135,18 +138,14 @@ Sans `--name`, le script demande le nom ; sans `--profile`, il propose le profil
 
 Pour supprimer la commande locale : `rm ~/.local/bin/mvc`. Pour une destination personnalisée : `bash install-local.sh --bin-dir /chemin/vers/bin` (ajouter ensuite ce dossier au `PATH`). Le programme n'écrase pas une commande existante qu'il n'a pas installée.
 
-## Utilisation
+## Utilisation et options
+
+La commande `mvc` peut être utilisée depuis n'importe quel dossier après l'installation globale. Pour les contributeurs ayant cloné le dépôt, l'ancien point d'entrée `bash script.sh` reste disponible.
 
 ```bash
-git clone https://github.com/mithridatem/mvc_script_generator.git
-cd mvc_script_generator
-
-bash script.sh --profile basic --name demo_basic
-bash script.sh --profile advanced --name demo_web --db-name demo_web
-bash script.sh --profile api-jwt --name demo_api --db-name demo_api
-
-# Options
-bash script.sh --help
+mvc --help
+mvc --profile advanced --name demo_web --db-name demo_web
+mvc --profile api-jwt --name demo_api --db-name demo_api
 ```
 
 Options communes : `--name`, `--profile`, `--target`, `--no-install`, `--db-host`, `--db-port`, `--db-name`, `--db-user`, `--configure-db`, `--help`.
