@@ -17,5 +17,6 @@
   ],
   "support": {
     "source": "https://github.com/mithridatem/mvc_script_generator"
-  }
+  },
+  "license": "MIT"
 }
