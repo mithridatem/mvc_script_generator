@@ -17,6 +17,7 @@ jobs:
           tools: composer:v2
       - name: Smoke tests — all profiles
         run: |
+          bash tests/smoke-local-cli.sh
           bash tests/smoke-basic.sh
           bash tests/smoke-advanced.sh
           bash tests/smoke-api-jwt.sh
