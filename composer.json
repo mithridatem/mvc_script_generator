@@ -1,0 +1,21 @@
+{
+  "name": "mithridatem/mvc-script-generator",
+  "description": "Generateur Bash de projets MVC PHP (basic, advanced web et API JWT)",
+  "type": "library",
+  "keywords": [
+    "mvc",
+    "php",
+    "bash",
+    "generator",
+    "cli"
+  ],
+  "require": {
+    "php": "^8.2"
+  },
+  "bin": [
+    "bin/mvc"
+  ],
+  "support": {
+    "source": "https://github.com/mithridatem/mvc_script_generator"
+  }
+}
