@@ -1,0 +1,39 @@
+name: Composer global CLI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - composer.json
+      - bin/**
+      - templates/**
+      - tests/smoke-composer-global.sh
+      - .github/workflows/composer-global.yml
+  pull_request:
+    paths:
+      - composer.json
+      - bin/**
+      - templates/**
+      - tests/smoke-composer-global.sh
+      - .github/workflows/composer-global.yml
+
+jobs:
+  composer-global:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer:v2
+      - name: Validate package metadata
+        run: composer validate --no-check-publish
+      - name: Verify Composer global command and generated projects
+        run: bash tests/smoke-composer-global.sh
