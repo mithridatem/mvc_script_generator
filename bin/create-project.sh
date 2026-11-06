@@ -91,7 +91,8 @@ if [[ "$CONFIGURE_DB" == "yes" && ! -t 0 ]]; then
 fi
 
 cp -R "$ROOT/templates/$PROFILE" "$DEST"
-SLUG="${NAME,,}"
+# Compatible Bash 3.2 (macOS) : ${NAME,,} requires Bash 4+.
+SLUG="$(printf '%s' "$NAME" | LC_ALL=C tr '[:upper:]' '[:lower:]')"
 sed "s/__PROJECT_NAME__/$SLUG/g" "$DEST/composer.json" > "$DEST/composer.tmp"
 mv "$DEST/composer.tmp" "$DEST/composer.json"
 cp "$DEST/.env.example" "$DEST/.env"
