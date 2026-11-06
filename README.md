@@ -32,7 +32,42 @@ Si `mvc` n'est pas reconnu, ajouter ce dossier au `PATH` de Git Bash, Bash ou Zs
 export PATH="$HOME/.local/bin:$PATH"
 ```
 
-Conserver cette ligne dans `~/.bashrc` (Git Bash/Linux) ou `~/.zshrc` (Zsh), puis ouvrir un nouveau terminal. Sous Windows, utiliser **Git Bash** pour les commandes proposées.
+Pour rendre le `PATH` permanent sous Linux/Bash, ajouter cette ligne dans `~/.bashrc` ; sous Zsh, l'ajouter à `~/.zshrc`. Sous Windows, utiliser **Git Bash** pour les commandes proposées.
+
+### Git Bash sous Windows : conserver `mvc` après redémarrage
+
+L'instruction `export PATH=...` ne s'applique qu'au terminal en cours. Pour retrouver la commande `mvc` dans chaque nouveau terminal Git Bash :
+
+```bash
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+
+which mvc
+mvc --help
+```
+
+Si `mvc` fonctionne après `source ~/.bashrc`, mais reste introuvable à l'ouverture d'un nouveau terminal, vérifier les fichiers de démarrage :
+
+```bash
+ls -la ~/.bashrc ~/.bash_profile
+```
+
+Git Bash peut être lancé comme un *login shell* et charger `~/.bash_profile`. Si ce fichier existe mais ne charge pas déjà `~/.bashrc`, ajouter **une seule fois** :
+
+```bash
+echo '[ -f ~/.bashrc ] && source ~/.bashrc' >> ~/.bash_profile
+```
+
+Fermer et rouvrir Git Bash, puis tester `mvc --help`. Avant d'ajouter des lignes, vérifier qu'elles ne sont pas déjà présentes pour éviter les doublons.
+
+Pour distinguer un problème de `PATH` d'une installation incomplète :
+
+```bash
+ls -l ~/.local/bin/mvc
+bash ~/.local/bin/mvc --help
+```
+
+Si ce dernier appel fonctionne mais pas `mvc --help`, le lanceur est installé ; il reste à rendre `~/.local/bin` accessible dans le `PATH` du nouveau terminal.
 
 Depuis **n'importe quel dossier**, créer un projet dans le répertoire courant :
 
