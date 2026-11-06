@@ -2,7 +2,7 @@
 
 > **Objectif :** développer une application Web PHP avec séparation des responsabilités, DTO, validation, services, repository PDO, injection de dépendances, session et protection CSRF.
 
-Ce guide décrit **les fichiers effectivement générés**, désormais synchronisés avec le bootstrap léger `Application / RouterFactory` de `project_exemple/main`.
+Ce guide décrit **les fichiers effectivement générés**, synchronisés avec le profil `variant/web-session-csrf` de `project_exemple` et le bootstrap léger `Application / RouterFactory`.
 
 ## 1. Préparer l'environnement
 
@@ -30,7 +30,7 @@ public/index.php → Application
   WebBootstrap → EnvironmentLoader (dev/test/prod) + session → Container → RouterFactory
       |
       v
-#[Route(..., middleware: [CsrfMiddleware::class])]
+#[Route(..., grants: ['IS_GUEST'], middleware: [CsrfMiddleware::class])]
       |
       v
 CsrfMiddleware -> validation du jeton de formulaire
@@ -56,6 +56,7 @@ Un jeton CSRF absent ou invalide est rejeté **avant** l'exécution du contrôle
 | `src/Kernel/WebBootstrap.php` | Initialise les en-têtes et la session PHP | 
 | `src/Kernel/EnvironmentLoader.php` | Sélectionne les fichiers locaux en dev/test, et les variables serveur uniquement en prod |
 | `src/Kernel/RouterFactory.php` | Configure le routeur, les middlewares, les grants et la découverte des routes |
+| `src/Security/GuestNavigation.php` | Conserve la dernière page GET autorisée en session ; redirection locale des utilisateurs connectés sur les routes invitées |
 | `src/Kernel/WebErrorHandler.php` | Transforme les exceptions en réponses HTML échappées |
 | `config/service.php` | Déclare la factory PDO et les paramètres du service d'upload |
 | `src/Controller/` | Actions HTTP, rendu des templates et redirections |
@@ -84,9 +85,15 @@ public function catalogue(): mixed
 }
 ```
 
-Les `grants` permettent de demander un rôle. Dans ce profil, ils sont construits depuis `$_SESSION['user']['grant']` par `ArrayGrantChecker`.
+Les `grants` permettent de demander un rôle. Dans ce profil, `AuthenticationAwareGrantChecker` reconnaît `IS_GUEST` (visiteur non connecté) et `IS_AUTHENTICATED` (utilisateur connecté), tandis que `ArrayGrantChecker` continue de vérifier les rôles présents dans `$_SESSION['user']['grant']`. Les rôles existants restent combinés en OU et la contrainte d'authentification s'ajoute aux rôles.
 
 Les contrôleurs peuvent regrouper leurs routes avec `#[RouteGroup(prefix: '/login')]` et des méthodes `#[Route(path: '/', method: 'GET'|'POST')]`. Une route POST avec formulaire sensible doit être protégée par `CsrfMiddleware` **sur l'action POST uniquement**. Le middleware est générique : générer le token avec le chemin public de soumission (ex. `$this->csrf->generate('/catalogue')`) puis placer `CsrfMiddleware` sur cette route POST. Aucun registre de formulaires n'est à modifier. Voir `docs/route-groups-web.md`.
+
+### Routes réservées aux invités
+
+Les routes `/login` et `/register` (GET **et** POST) portent `grants: ['IS_GUEST']`. Une visite par un utilisateur déjà connecté provoque une `UnauthorizedException` dans le routeur ; l'application Web redirige ensuite en HTTP 303 vers la dernière page GET interne autorisée mémorisée en session ou vers `/` par défaut. Cette destination de repli est configurable dans `Application` via `GuestNavigation`. Si aucune destination sûre n'existe, la réponse 403 est conservée. Aucune session ni redirection n'est imposée par la librairie router. Voir [le guide détaillé](guest-navigation.md).
+
+Pour une route accessible à toute personne connectée, utiliser `grants: ['IS_AUTHENTICATED']`. Les API JWT ne sont pas concernées par le mécanisme de navigation Web.
 
 ## 5. Exemple de parcours : inscription
 
@@ -119,6 +126,7 @@ Pour un paramètre scalaire, utiliser `configure()`, comme pour `UploadFileServi
 ```bash
 php tests/environment_loader_test.php
 php tests/web_kernel_test.php
+php tests/guest_navigation_test.php
 php tests/login_input_test.php
 php tests/register_user_input_test.php
 php tests/csrf_token_manager_test.php
