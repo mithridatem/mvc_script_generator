@@ -8,6 +8,10 @@ Profil pédagogique basé sur [project_exemple / main](https://github.com/evalua
 
 Il utilise `mithridatem/router`, `mithridatem/validation` et `mithridatem/autowiring`. Authentification HTML en session PHP, `grants` de routes et vérification CSRF dans le **middleware** (plus dans les contrôleurs).
 
+## Environnements
+
+`APP_ENV=dev` utilise `.env`, `APP_ENV=test` charge `.env.test` et **`APP_ENV=prod` n'utilise aucun fichier dotenv** : injecter les variables/secrets depuis le serveur ou le conteneur. Voir [docs/environments.md](docs/environments.md). Les routes Login/Register utilisent désormais `RouteGroup` et le CSRF générique sans registre de formulaires.
+
 ## Installer
 
 ```bash
@@ -38,6 +42,7 @@ La correction d'hydratation de l'entité `User`, le DSN MySQL et les placeholder
 ## Tests
 
 ```bash
+php tests/environment_loader_test.php
 php tests/web_kernel_test.php
 php tests/login_input_test.php
 php tests/register_user_input_test.php
