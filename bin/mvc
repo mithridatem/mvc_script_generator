@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Composer installs this executable through a bin proxy; the source script
+# remains located in the package so the engine can find ../templates.
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+exec bash "$ROOT/bin/create-project.sh" "$@"
