@@ -5,8 +5,8 @@ Générateur pédagogique avec [mithridatem/router](https://github.com/evaluatio
 | Profil | Objectif | Authentification |
 |---|---|---|
 | `basic` | MVC minimal, routing | Aucune |
-| `advanced` | MVC Web avancé, DTO, services, repositories, middleware CSRF | Session PHP + grants |
-| `api-jwt` | API REST JSON, JWT Firebase, middleware d'authentification | Bearer JWT + grants |
+| `advanced` | MVC Web avancé, DTO, services, repositories, middleware CSRF et RouteGroup | Session PHP + grants |
+| `api-jwt` | API REST JSON, JWT Firebase, middleware d'authentification et RouteGroup | Bearer JWT + grants |
 
 Le profil `advanced` reprend [project_exemple/main](https://github.com/evaluationWeb/project_exemple/tree/main). Le profil `api-jwt` reprend [project_exemple/variant/api-jwt](https://github.com/evaluationWeb/project_exemple/tree/variant/api-jwt). Les adaptations propres au générateur sont conservées.
 
@@ -61,3 +61,9 @@ Chaque projet généré contient un guide pratique dans `docs/guide-utilisation.
 Les profils `advanced` et `api-jwt` reprennent désormais l'architecture validée dans les deux branches de `project_exemple` : un `public/index.php` minimal qui démarre `App\\Kernel\\Application`, une `RouterFactory` et un bootstrap/gestionnaire d'erreurs spécifiques au type d'application.
 
 Le profil `basic` est volontairement **inchangé**. Les guides `docs/guide-utilisation.md` et les tests de bootstrap sont inclus dans les projets générés.
+
+## Environnements et préparation à la production
+
+Les deux profils avancés sont alignés sur leurs branches de référence `project_exemple` : `RouteGroup`, protection CSRF générique pour le Web, héritage JWT/grants pour l'API et `EnvironmentLoader`.
+
+Chaque projet reçoit un fichier `.env` local, créé depuis `.env.example`, et ignoré par Git. `APP_ENV=dev` charge `.env` ; `APP_ENV=test` charge `.env.test` ; en **production**, définir `APP_ENV=prod` au niveau de l'hébergement et injecter les variables/secrets, sans fichier dotenv. Les guides embarqués `docs/environments.md` documentent la procédure. L'API génère un `JWT_SECRET` local et permet de configurer sa durée de vie avec `JWT_TTL_SECONDS`.
