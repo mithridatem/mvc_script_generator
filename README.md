@@ -14,6 +14,45 @@ Le profil `advanced` reprend [project_exemple/main](https://github.com/evaluatio
 
 PHP 8.2+, Composer 2 et Bash (Linux/macOS/Git Bash). MySQL ou MariaDB pour les profils `advanced` et `api-jwt`.
 
+## Installation locale : commande `mvc` (sans Packagist)
+
+Cloner le générateur **une seule fois** dans un dossier permanent :
+
+```bash
+git clone https://github.com/mithridatem/mvc_script_generator.git ~/tools/mvc_script_generator
+cd ~/tools/mvc_script_generator
+bash install-local.sh
+```
+
+Le script installe un petit lanceur dans `~/.local/bin/mvc`, pointant vers ce dépôt. **Conserver le dépôt à cet emplacement** : le lanceur utilise ses templates et le script de génération. Pour recevoir les évolutions, effectuer `git pull` dans ce dépôt (réinstaller seulement si tu le déplaces).
+
+Si `mvc` n'est pas reconnu, ajouter ce dossier au `PATH` de Git Bash, Bash ou Zsh :
+
+```bash
+export PATH="$HOME/.local/bin:$PATH"
+```
+
+Conserver cette ligne dans `~/.bashrc` (Git Bash/Linux) ou `~/.zshrc` (Zsh), puis ouvrir un nouveau terminal. Sous Windows, utiliser **Git Bash** pour les commandes proposées.
+
+Depuis **n'importe quel dossier**, créer un projet dans le répertoire courant :
+
+```bash
+cd ~/projets
+mvc --profile advanced --name bibliotheque
+mvc --profile api-jwt --name api_books
+mvc --profile basic --name projet_mvc
+```
+
+Ou choisir un dossier parent explicite avec `--target` (ce dossier doit exister) :
+
+```bash
+mvc --profile advanced --name bibliotheque --target ~/Documents/projets
+```
+
+Sans `--name`, le script demande le nom ; sans `--profile`, il propose le profil en mode interactif. Les anciennes commandes `bash script.sh ...` et toutes les options existantes fonctionnent toujours. L'installation **ne modifie pas** automatiquement les fichiers de configuration du shell.
+
+Pour supprimer la commande locale : `rm ~/.local/bin/mvc`. Pour une destination personnalisée : `bash install-local.sh --bin-dir /chemin/vers/bin` (ajouter ensuite ce dossier au `PATH`). Le programme n'écrase pas une commande existante qu'il n'a pas installée.
+
 ## Utilisation
 
 ```bash
@@ -45,6 +84,7 @@ Pour les profils avec SQL : importer `db.sql`, puis vérifier le fichier `.env` 
 ## Vérifications du générateur
 
 ```bash
+bash tests/smoke-local-cli.sh
 bash tests/smoke-basic.sh
 bash tests/smoke-advanced.sh
 bash tests/smoke-api-jwt.sh
