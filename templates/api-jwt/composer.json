@@ -5,7 +5,7 @@
     "php": "^8.2",
     "ext-pdo": "*",
     "ext-pdo_mysql": "*",
-    "mithridatem/router": "^1.4",
+    "mithridatem/router": "^1.6",
     "mithridatem/validation": "^1.2",
     "mithridatem/autowiring": "^1.4",
     "firebase/php-jwt": "^7.2",
