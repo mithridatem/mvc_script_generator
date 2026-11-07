@@ -140,3 +140,27 @@ Voir aussi `docs/jwt-api.md` pour les choix d'authentification et les limites de
 ## 9. Déploiement et environnement
 
 Le générateur produit un secret JWT aléatoire dans `.env` pour le développement uniquement. En production, **ne pas copier ce fichier** : définir `APP_ENV=prod` et injecter un `JWT_SECRET` distinct (ainsi que les variables SQL et JWT) dans l'environnement serveur. `EnvironmentLoader` n'ouvre aucun fichier dotenv en mode prod. Voir `docs/environments.md`.
+
+## Mise à jour des librairies auditées (novembre 2026)
+
+Le profil déclare au minimum `mithridatem/router:^1.7.1`,
+`mithridatem/autowiring:^1.4.2` et `mithridatem/validation:^1.2.1`.
+Les versions correctives compatibles pourront être prises en charge par Composer.
+
+`UserRepository` n'affiche plus les exceptions PDO dans la réponse HTTP :
+les erreurs remontent au gestionnaire HTTP applicatif, qui produit une
+réponse générique. `User::hydrate()` convertit les champs date SQL en
+`DateTimeImmutable` et accepte une date `updated_at` nulle.
+
+Les régressions de confidentialité SQL et d'hydratation se vérifient avec :
+
+```bash
+php tests/security/reproduce_repository_leak.php
+```
+
+Le gestionnaire JWT refuse un `JWT_TTL_SECONDS` nul ou négatif.
+Les scénarios de claims, signatures, durées et isolation de l'identité sont
+vérifiés avec `php tests/jwt_security_edge_test.php`.
+
+Ces tests ne remplacent pas une validation avec une base MySQL réelle,
+un serveur HTTP et des paramètres HTTPS de production.
