@@ -156,30 +156,50 @@ class User implements Entity
         );
     }
 
-    public static function hydrate(array $data): self
+    public static function hydrate(array $user): User
     {
-        $user = new self(
-            $data['firstname'] ?? null,
-            $data['lastname'] ?? null,
-            $data['email'] ?? null,
-            $data['hash_password'] ?? null
+        $hydrateUser = new User(
+            $user['firstname'] ?? null,
+            $user['lastname'] ?? null,
+            $user['email'] ?? null,
+            $user['hash_password'] ?? null
         );
 
-        if (isset($data['id_user'])) {
-            $user->setId((int) $data['id_user']);
+        // PDO returns DATETIME columns as strings. Convert them at the
+        // persistence boundary instead of passing strings to typed setters.
+        if (isset($user['created_at'])) {
+            $hydrateUser->setCreatedAt(
+                self::hydrateDate($user['created_at'])
+            );
         }
 
-        $user->setGrant($data['grant'] ?? null);
-        $user->setImgProfil($data['img_profil'] ?? null);
+        $hydrateUser->setUpdatedAt(
+            self::hydrateDate($user['updated_at'] ?? null)
+        );
+        $hydrateUser->setGrant($user['grant'] ?? null);
+        $hydrateUser->setImgProfil($user['img_profil'] ?? null);
 
-        if (!empty($data['created_at'])) {
-            $user->setCreatedAt(new \DateTimeImmutable($data['created_at']));
+        return $hydrateUser;
+    }
+
+    private static function hydrateDate(mixed $date): ?\DateTimeImmutable
+    {
+        if ($date === null) {
+            return null;
         }
 
-        if (!empty($data['updated_at'])) {
-            $user->setUpdatedAt(new \DateTimeImmutable($data['updated_at']));
+        if ($date instanceof \DateTimeImmutable) {
+            return $date;
         }
 
-        return $user;
+        if (!is_string($date)) {
+            throw new \UnexpectedValueException('Invalid database date type.');
+        }
+
+        try {
+            return new \DateTimeImmutable($date);
+        } catch (\Exception $e) {
+            throw new \UnexpectedValueException('Invalid database date format.', 0, $e);
+        }
     }
 }
