@@ -33,9 +33,11 @@ jobs:
           cd ci_advanced
           composer install --no-interaction --prefer-dist
           for test in tests/*_test.php; do php "$test"; done
+          php tests/security/reproduce_repository_leak.php
       - name: Test API JWT authentication, grants and routes
         run: |
           bash script.sh --name ci_api --profile api-jwt --no-install
           cd ci_api
           composer install --no-interaction --prefer-dist
           for test in tests/*_test.php; do php "$test"; done
+          php tests/security/reproduce_repository_leak.php
