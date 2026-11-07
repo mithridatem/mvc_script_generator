@@ -153,3 +153,23 @@ Tester également en navigateur avec une vraie base de données : formulaire val
 ## 9. Déploiement et environnement
 
 `APP_ENV=dev` charge `.env` ; `APP_ENV=test` charge `.env.test`. En production, définir `APP_ENV=prod` dans l'hébergement et injecter directement les variables d'environnement : aucun fichier dotenv n'est lu. Le générateur crée uniquement un `.env` **local ignoré par Git**. Guide complet : `docs/environments.md`.
+
+## Mise à jour des librairies auditées (novembre 2026)
+
+Le profil déclare au minimum `mithridatem/router:^1.7.1`,
+`mithridatem/autowiring:^1.4.2` et `mithridatem/validation:^1.2.1`.
+Les versions correctives compatibles pourront être prises en charge par Composer.
+
+`UserRepository` n'affiche plus les exceptions PDO dans la réponse HTTP :
+les erreurs remontent au gestionnaire HTTP applicatif, qui produit une
+réponse générique. `User::hydrate()` convertit les champs date SQL en
+`DateTimeImmutable` et accepte une date `updated_at` nulle.
+
+Les régressions de confidentialité SQL et d'hydratation se vérifient avec :
+
+```bash
+php tests/security/reproduce_repository_leak.php
+```
+
+Ces tests ne remplacent pas une validation avec une base MySQL réelle,
+un serveur HTTP et des paramètres HTTPS de production.
