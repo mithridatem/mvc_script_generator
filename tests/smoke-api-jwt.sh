@@ -22,7 +22,7 @@ test ! -f "$PROJECT/src/Middleware/CsrfMiddleware.php"
 test ! -f "$PROJECT/src/Controller/LoginController.php"
 test ! -f "$PROJECT/template/template_login.php"
 grep -q 'firebase/php-jwt' "$PROJECT/composer.json"
-grep -q '"mithridatem/router": "\^1.6"' "$PROJECT/composer.json"
+grep -q '"mithridatem/router": "\^1.7.1"' "$PROJECT/composer.json"
 grep -q 'new Application' "$PROJECT/public/index.php"
 test -f "$PROJECT/src/Kernel/Application.php"
 test -f "$PROJECT/src/Kernel/RouterFactory.php"
@@ -57,6 +57,11 @@ bash "$ROOT/bin/create-project.sh" --profile api-jwt --name DemoApiTwo --target 
 SECOND="$(sed -n 's/^JWT_SECRET=//p' "$TMP/DemoApiTwo/.env")"
 [[ "$SECRET" != "$SECOND" ]] || { echo "JWT secrets must be unique" >&2; exit 1; }
 
+test -f "$PROJECT/tests/security/reproduce_repository_leak.php"
+test -f "$PROJECT/tests/jwt_security_edge_test.php"
+grep -q 'JWT_TTL_SECONDS must be a positive integer' "$PROJECT/src/Security/Jwt/JwtTokenManager.php"
+grep -q 'hydrateDate' "$PROJECT/src/Entity/User.php"
+! grep -q 'echo \$e->getMessage()' "$PROJECT/src/Repository/UserRepository.php"
 php -r 'json_decode(file_get_contents($argv[1]), true, 512, JSON_THROW_ON_ERROR);' "$PROJECT/composer.json"
 while IFS= read -r -d '' file; do php -l "$file" >/dev/null; done < <(find "$PROJECT" -name '*.php' -print0)
 echo "API JWT scaffold : OK"
