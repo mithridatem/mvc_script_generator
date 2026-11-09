@@ -4,7 +4,7 @@
 
 Après génération, consulter **[docs/guide-utilisation.md](docs/guide-utilisation.md)** pour comprendre le parcours des requêtes, le rôle des composants et ajouter une fonctionnalité pas à pas.
 
-Profil pédagogique dérivé de [project_exemple, branche `variant/api-jwt`](https://github.com/evaluationWeb/project_exemple/tree/variant/api-jwt). **API REST uniquement** : pas de session PHP, pas de vues HTML, pas de CSRF cookie. Les routes utilisent toujours `grants`.
+Profil technique générique synchronisé avec la branche `variant/api-jwt` de [mvc_starter](https://github.com/mithridatem/mvc_starter/tree/variant/api-jwt). **API REST uniquement** : pas de session PHP, pas de vues HTML, pas de CSRF cookie. Les routes utilisent toujours `grants`.
 
 ## Environnements
 
