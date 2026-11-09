@@ -174,6 +174,14 @@ bash tests/smoke-api-jwt.sh
 
 Les smoke tests valident la génération, la syntaxe PHP, les structures de profils et la configuration sans base SQL. Le workflow GitHub Actions installe aussi les dépendances et exécute les tests des projets générés. Pour un déploiement public, revoir sécurité, secrets, HTTPS, rate limiting et gestion d'erreurs.
 
+## Rendu HTML du profil Advanced Web
+
+Le profil `advanced` est synchronisé avec `mvc_starter/variant/web` : `render()` et `renderComponent()` retournent du HTML sous forme de `string` grâce à un buffer commun. Les composants sont affichés dans les templates avec `<?= $this->renderComponent(...) ?>` et le résultat du routeur est envoyé par `Application`.
+
+La PHPDoc des méthodes utilitaires est incluse dans les projets générés. Le profil fournit les tests `tests/template_render_test.php` et `tests/auth_form_render_test.php` ; les exécuter après `composer install`.
+
+Les profils `basic` et `api-jwt` restent inchangés.
+
 ## Guides embarqués
 
 Chaque projet généré contient un guide pratique dans `docs/guide-utilisation.md` : prise en main, parcours d'une requête, architecture, extension et vérifications. Les guides sont adaptés à chaque profil (`basic`, `advanced`, `api-jwt`) et sont copiés automatiquement avec le squelette. Les README restent des instructions de démarrage rapide.
