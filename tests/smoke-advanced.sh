@@ -64,6 +64,11 @@ grep -q "renderRegisterForm" "$PROJECT/src/Controller/RegisterController.php"
 grep -q 'UPLOAD_DIRECTORY=' "$PROJECT/.env"
 grep -q '^DATABASE_NAME=demo_school$' "$PROJECT/.env"
 grep -q 'CREATE DATABASE IF NOT EXISTS `demo_school`' "$PROJECT/db.sql"
+grep -q 'CREATE TABLE IF NOT EXISTS `user`' "$PROJECT/db.sql"
+if grep -Eiq 'CREATE TABLE.*(book|lending|category)' "$PROJECT/db.sql"; then
+  echo 'Le scaffold advanced ne doit pas contenir de tables métier' >&2
+  exit 1
+fi
 
 test -f "$PROJECT/tests/security/reproduce_repository_leak.php"
 grep -q 'hydrateDate' "$PROJECT/src/Entity/User.php"
