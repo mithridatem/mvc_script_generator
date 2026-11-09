@@ -51,7 +51,10 @@ if grep -Eiq 'CREATE TABLE.*(book|lending|category)' "$PROJECT/db.sql"; then
   echo 'Le scaffold API JWT ne doit pas contenir de tables métier' >&2
   exit 1
 fi
-grep -q '^JWT_ISSUER=mvc-starterPERMS="$(php -r 'echo decoct(fileperms($argv[1]) & 0777);' "$PROJECT/.env")"
+grep -q '^JWT_ISSUER=mvc-starter$' "$PROJECT/.env"
+grep -q '^JWT_AUDIENCE=mvc-starter-api$' "$PROJECT/.env"
+grep -Fq "'issuer' => \$_ENV['JWT_ISSUER'] ?? 'mvc-starter'" "$PROJECT/config/service.php"
+PERMS="$(php -r 'echo decoct(fileperms($argv[1]) & 0777);' "$PROJECT/.env")"
 test "$PERMS" = "600" || { echo '.env permissions are not private' >&2; exit 1; }
 
 # The generated secret must be random, valid hex and must differ across projects.
