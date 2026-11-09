@@ -40,6 +40,12 @@ Parcours : `GET /login`, `POST /login`, `GET /register`, `POST /register`. Les r
 
 La correction d'hydratation de l'entité `User`, le DSN MySQL et les placeholders du générateur sont conservés.
 
+## Rendu HTML
+
+Dans ce profil, `AbstractController::render()` renvoie le HTML d'un template complet et `renderComponent()` renvoie celui d'un composant. Les deux utilisent un buffer commun et **n'écrivent pas directement dans la réponse**. Les vues doivent afficher explicitement les composants avec `<?= $this->renderComponent(...) ?>`. Le point d'entrée Web émet la chaîne retournée par le routeur.
+
+Les méthodes utilitaires disposent de PHPDoc détaillées (paramètres, retours et exceptions). Exemples et précautions : [guide d'utilisation](docs/guide-utilisation.md).
+
 ## Tests
 
 ```bash
@@ -54,6 +60,7 @@ php tests/csrf_route_configuration_test.php
 php tests/form_submission_test.php
 php tests/user_session_manager_test.php
 php tests/auth_form_render_test.php
+php tests/template_render_test.php
 php tests/request_dto_mapping_test.php
 ```
 
