@@ -57,7 +57,9 @@ Un jeton CSRF absent ou invalide est rejeté **avant** l'exécution du contrôle
 | `src/Kernel/EnvironmentLoader.php` | Sélectionne les fichiers locaux en dev/test, et les variables serveur uniquement en prod |
 | `src/Kernel/RouterFactory.php` | Configure le routeur, les middlewares, les grants et la découverte des routes |
 | `src/Security/GuestNavigation.php` | Conserve la dernière page GET autorisée en session ; redirection locale des utilisateurs connectés sur les routes invitées |
-| `src/Kernel/WebErrorHandler.php` | Transforme les exceptions en réponses HTML échappées |
+| `src/Kernel/WebErrorHandler.php` | Associe les exceptions aux statuts HTTP, préserve les en-têtes et fournit un rendu de secours |
+| `src/Controller/ErrorController.php` | Produit les pages d'erreur via `render()` sans nouvelle route HTTP |
+| `template/template_error.php` | Affiche les messages génériques et liens de retour/connexion |
 | `config/service.php` | Déclare la factory PDO et les paramètres du service d'upload |
 | `src/Controller/` | Actions HTTP, rendu des templates et redirections |
 | `src/DTO/` | Objets représentant les données d'entrée |
@@ -143,6 +145,10 @@ Les deux méthodes utilisent un buffer interne commun, nettoyé en cas d'excepti
 
 Vérifier ce comportement avec `php tests/template_render_test.php` et `php tests/auth_form_render_test.php
 php tests/template_render_test.php`.
+
+### Pages d'erreur HTML
+
+`WebErrorHandler` associe les exceptions aux statuts 403, 404, 405 ou 500 et appelle directement `ErrorController::error()`. La page HTML commune affiche un message sans divulguer l'exception, avec un lien de retour à l'accueil ; le statut 401 propose une connexion. Un échec de rendu utilise une page 500 minimale. Le routeur n'est pas réexécuté et les redirections `IS_GUEST` restent gérées par `Application`.
 
 ## 7. Tests et vérifications
 
