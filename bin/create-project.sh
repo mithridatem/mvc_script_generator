@@ -6,20 +6,23 @@ PROFILE=""
 NAME=""
 TARGET_PARENT="."
 INSTALL="yes"
+DB_DRIVER="mysql"
 DB_HOST="127.0.0.1"
 DB_PORT="3306"
 DB_NAME=""
 DB_USER="root"
 CONFIGURE_DB="no"
+DB_PORT_EXPLICIT="no"
 
 usage() {
   cat <<'USAGE'
 Usage: bash script.sh [--name NOM] [--profile basic|advanced|api-jwt] [--target DOSSIER]
                       [--no-install] [--db-host HOTE] [--db-port PORT]
-                      [--db-name BASE] [--db-user UTILISATEUR] [--configure-db]
+                      [--db-name BASE] [--db-user UTILISATEUR] [--db-driver mysql|pgsql|sqlite] [--configure-db]
 Trois profils : basic (router seul), advanced (Web session + CSRF) ou api-jwt (API Bearer JWT).
 --configure-db demande le mot de passe sans affichage (uniquement en mode interactif).
 Sans --configure-db, compléter DATABASE_PASSWORD dans le .env généré.
+Pour sqlite, initialiser database/sqlite.sql ; pour PostgreSQL, database/postgresql.sql.
 USAGE
 }
 
@@ -30,7 +33,8 @@ while (($#)); do
     --target) TARGET_PARENT="${2:?Chemin manquant}"; shift 2 ;;
     --no-install) INSTALL="no"; shift ;;
     --db-host) DB_HOST="${2:?Hôte manquant}"; shift 2 ;;
-    --db-port) DB_PORT="${2:?Port manquant}"; shift 2 ;;
+    --db-port) DB_PORT="${2:?Port manquant}"; DB_PORT_EXPLICIT="yes"; shift 2 ;;
+    --db-driver) DB_DRIVER="${2:?Driver manquant}"; shift 2 ;;
     --db-name) DB_NAME="${2:?Base manquante}"; shift 2 ;;
     --db-user) DB_USER="${2:?Utilisateur manquant}"; shift 2 ;;
     --configure-db) CONFIGURE_DB="yes"; shift ;;
@@ -83,6 +87,15 @@ if [[ "$PROFILE" == "advanced" || "$PROFILE" == "api-jwt" ]]; then
   fi
 fi
 
+if [[ "$DB_DRIVER" != "mysql" && "$DB_DRIVER" != "pgsql" && "$DB_DRIVER" != "sqlite" ]]; then
+  echo "Driver inconnu : $DB_DRIVER (mysql, pgsql, sqlite)" >&2; exit 2
+fi
+if [[ "$DB_DRIVER" == "pgsql" && "$DB_PORT_EXPLICIT" == "no" ]]; then
+  DB_PORT="5432"
+fi
+if [[ "$CONFIGURE_DB" == "yes" && "$DB_DRIVER" == "sqlite" ]]; then
+  echo "--configure-db ne s'applique pas à SQLite." >&2; exit 2
+fi
 if [[ "$CONFIGURE_DB" == "yes" && "$PROFILE" == "basic" ]]; then
   echo "--configure-db ne concerne que advanced et api-jwt." >&2; exit 2
 fi
@@ -96,6 +109,12 @@ SLUG="$(printf '%s' "$NAME" | LC_ALL=C tr '[:upper:]' '[:lower:]')"
 sed "s/__PROJECT_NAME__/$SLUG/g" "$DEST/composer.json" > "$DEST/composer.tmp"
 mv "$DEST/composer.tmp" "$DEST/composer.json"
 cp "$DEST/.env.example" "$DEST/.env"
+sed -i.bak -e "s|^DATABASE_DRIVER=.*|DATABASE_DRIVER=$DB_DRIVER|" "$DEST/.env"
+rm -f "$DEST/.env.bak"
+if [[ "$PROFILE" == "basic" && "$DB_DRIVER" == "pgsql" ]]; then
+  sed -i.bak -e "s|^DATABASE_PORT=.*|DATABASE_PORT=$DB_PORT|" "$DEST/.env"
+  rm -f "$DEST/.env.bak"
+fi
 
 if [[ "$PROFILE" == "advanced" || "$PROFILE" == "api-jwt" ]]; then
   # Les valeurs non secrètes sont validées avant substitution.
