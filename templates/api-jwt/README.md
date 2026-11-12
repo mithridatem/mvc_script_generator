@@ -60,3 +60,15 @@ php tests/jwt_authentication_test.php
 Voir `docs/jwt-api.md` pour les limites de sécurité. En production : HTTPS, protection contre la force brute, politique de révocation/rotation et suivi des autorisations.
 
 Les routes sont regroupées avec `#[RouteGroup]` : `AuthController` reste public, tandis que `ProfileController` hérite de `JwtMiddleware` et de `ROLE_USER` au niveau de sa classe.
+
+## Bases de données : MySQL, PostgreSQL et SQLite
+
+Le profil propose `ConnectionInterface`, `ConnectionFactory` et trois adaptateurs PDO (`Mysql`, `Postgresql`, `Sqlite`). Choisir `DATABASE_DRIVER=mysql|pgsql|sqlite` dans `.env` ou `mvc --db-driver ...` à la génération (MySQL/MariaDB par défaut).
+
+- MySQL/MariaDB : `db.sql` pour les profils disposant d'un schéma d'authentification.
+- PostgreSQL : `database/postgresql.sql` (après création de la base) pour les profils avancés.
+- SQLite : `database/sqlite.sql` et `DATABASE_PATH=var/database.sqlite` pour les profils avancés.
+
+Le profil basic reste utilisable sans base de données ; les schémas ne sont pas imposés. Les fichiers SQLite sont conservés hors de `public/`. Les repositories des profils avancés continuent à recevoir un objet `PDO`.
+
+Consulter [docs/databases.md](docs/databases.md) pour la configuration et exécuter `php tests/database_connection_test.php` après `composer install`.
