@@ -146,3 +146,9 @@ php -l src/Controller/SalutController.php
 Exercices suggérés : page avec paramètre, service de calcul, puis repository PDO. Lorsque plusieurs services dépendent les uns des autres, passer au profil **Advanced**, qui illustre l'injection automatique de dépendances.
 
 **Limites :** ce projet est un point de départ pour l'apprentissage. Il ne fournit ni authentification, ni protection CSRF, ni stratégie de tests applicatifs complète. Ajouter les protections adaptées avant une mise en production.
+
+## Choix du moteur PDO
+
+La sélection `DATABASE_DRIVER` prend en charge `mysql` (défaut), `pgsql` et `sqlite` ; utiliser `--db-driver` lors de la génération ou modifier `.env`. Le contrat `ConnectionInterface` est implémenté par trois classes, avec sélection via `ConnectionFactory`. `PDO` reste le type utilisé par les repositories.
+
+Le chemin SQLite par défaut est `var/database.sqlite`, hors de `public/`. La documentation détaillée (extensions, initialisation SQL, limites des dialectes) se trouve dans [docs/databases.md](databases.md). Les tests de connexion sont dans `tests/database_connection_test.php`.
