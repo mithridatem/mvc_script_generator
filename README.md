@@ -12,7 +12,7 @@ Le profil `advanced` reprend [project_exemple/main](https://github.com/evaluatio
 
 ## Prérequis
 
-PHP 8.2+, Composer 2 et Bash (Linux/macOS/Git Bash). MySQL ou MariaDB pour les profils `advanced` et `api-jwt`.
+PHP 8.2+, Composer 2 et Bash (Linux/macOS/Git Bash). Pour les fonctionnalités SQL, installer l'extension PDO du moteur choisi : `pdo_mysql`, `pdo_pgsql` ou `pdo_sqlite`. Le profil `basic` fonctionne sans base de données.
 
 ## Installation globale avec Composer (recommandée)
 
@@ -148,9 +148,9 @@ mvc --profile advanced --name demo_web --db-name demo_web
 mvc --profile api-jwt --name demo_api --db-name demo_api
 ```
 
-Options communes : `--name`, `--profile`, `--target`, `--no-install`, `--db-host`, `--db-port`, `--db-name`, `--db-user`, `--configure-db`, `--help`.
+Options communes : `--name`, `--profile`, `--target`, `--no-install`, `--db-driver`, `--db-host`, `--db-port`, `--db-name`, `--db-user`, `--configure-db`, `--help`.
 
-Le script refuse l'écrasement d'un projet existant. Pour les deux profils avec BDD, il personnalise `db.sql` et `DATABASE_*`. Avec `--configure-db`, le mot de passe est demandé en mode interactif sans être affiché. Le projet `api-jwt` reçoit automatiquement un secret JWT distinct et aléatoire (`random_bytes(32)`) dans `.env`, ignoré de Git et de permissions `600`.
+Le script refuse l'écrasement d'un projet existant. Le choix `--db-driver mysql|pgsql|sqlite` définit `DATABASE_DRIVER` dans `.env` (MySQL par défaut) ; le port par défaut PostgreSQL est 5432. Pour les deux profils avec schéma SQL, le script personnalise `db.sql` (MySQL) et `DATABASE_*`. Avec `--configure-db` (hors SQLite), le mot de passe est demandé en mode interactif sans être affiché. Le projet `api-jwt` reçoit automatiquement un secret JWT distinct et aléatoire (`random_bytes(32)`) dans `.env`, ignoré de Git et de permissions `600`.
 
 ## Démarrage
 
@@ -160,7 +160,7 @@ composer install
 php -S 127.0.0.1:8000 -t public
 ```
 
-Pour les profils avec SQL : importer `db.sql`, puis vérifier le fichier `.env` généré. Documentation détaillée dans chaque dossier `templates/<profil>/README.md`.
+Pour les profils avancés : importer `db.sql` (MySQL/MariaDB), `database/postgresql.sql` ou `database/sqlite.sql` selon le driver choisi, puis vérifier `.env`. SQLite utilise `DATABASE_PATH=var/database.sqlite`. Documentation détaillée dans chaque dossier `templates/<profil>/README.md`.
 
 ## Vérifications du générateur
 
@@ -170,6 +170,7 @@ bash tests/smoke-composer-global.sh
 bash tests/smoke-basic.sh
 bash tests/smoke-advanced.sh
 bash tests/smoke-api-jwt.sh
+bash tests/smoke-database-drivers.sh
 ```
 
 Les smoke tests valident la génération, la syntaxe PHP, les structures de profils et la configuration sans base SQL. Le workflow GitHub Actions installe aussi les dépendances et exécute les tests des projets générés. Pour un déploiement public, revoir sécurité, secrets, HTTPS, rate limiting et gestion d'erreurs.
@@ -180,7 +181,7 @@ Le profil `advanced` est synchronisé avec `mvc_starter/variant/web` : `render()
 
 La PHPDoc des méthodes utilitaires est incluse dans les projets générés. Le profil fournit les tests `tests/template_render_test.php` et `tests/auth_form_render_test.php` ; les exécuter après `composer install`.
 
-Les profils `basic` et `api-jwt` restent inchangés.
+Ce rendu HTML est spécifique au profil `advanced` et n'est pas imposé aux autres profils.
 
 ## Guides embarqués
 
@@ -190,10 +191,24 @@ Chaque projet généré contient un guide pratique dans `docs/guide-utilisation.
 
 Les profils `advanced` et `api-jwt` reprennent désormais l'architecture validée dans les deux branches de `project_exemple` : un `public/index.php` minimal qui démarre `App\\Kernel\\Application`, une `RouterFactory` et un bootstrap/gestionnaire d'erreurs spécifiques au type d'application.
 
-Le profil `basic` est volontairement **inchangé**. Les guides `docs/guide-utilisation.md` et les tests de bootstrap sont inclus dans les projets générés.
+Le profil `basic` reste minimal et n'utilise pas de conteneur d'injection. Les guides `docs/guide-utilisation.md` et les tests de bootstrap sont inclus dans les projets générés.
 
 ## Environnements et préparation à la production
 
 Les deux profils avancés sont alignés sur leurs branches de référence `project_exemple` : `RouteGroup`, protection CSRF générique pour le Web, héritage JWT/grants pour l'API et `EnvironmentLoader`.
 
 Chaque projet reçoit un fichier `.env` local, créé depuis `.env.example`, et ignoré par Git. `APP_ENV=dev` charge `.env` ; `APP_ENV=test` charge `.env.test` ; en **production**, définir `APP_ENV=prod` au niveau de l'hébergement et injecter les variables/secrets, sans fichier dotenv. Les guides embarqués `docs/environments.md` documentent la procédure. L'API génère un `JWT_SECRET` local et permet de configurer sa durée de vie avec `JWT_TTL_SECONDS`.
+
+## Connexions PDO multi-bases (nouveauté)
+
+Les trois profils proposent désormais `ConnectionInterface`, `ConnectionFactory` et les implémentations `Mysql`, `Postgresql`, `Sqlite`. Le choix s'effectue à la génération ou dans le `.env` du projet :
+
+```bash
+mvc --profile basic --name demo_sqlite --db-driver sqlite
+mvc --profile advanced --name demo_web_pg --db-driver pgsql --db-name demo_pg
+mvc --profile api-jwt --name demo_api --db-driver mysql --db-name demo_api
+```
+
+MySQL/MariaDB reste le moteur par défaut et `Mysql::connectBdd()` reste disponible. Les deux profils avancés possèdent des schémas adaptés (MySQL dans `db.sql`, PostgreSQL dans `database/postgresql.sql`, SQLite dans `database/sqlite.sql`). Le profil basic reste utilisable sans base, sans conteneur et sans schéma imposé. Aucun changement de driver ne migre les données existantes.
+
+Les guides `docs/databases.md` de chaque projet généré détaillent les extensions PHP et les commandes d'initialisation. Les tests du générateur incluent les trois drivers et un exercice SQLite sur une base temporaire.
