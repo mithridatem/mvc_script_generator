@@ -21,6 +21,7 @@ jobs:
           bash tests/smoke-basic.sh
           bash tests/smoke-advanced.sh
           bash tests/smoke-api-jwt.sh
+          bash tests/smoke-database-drivers.sh
       - name: Test basic dependencies
         run: |
           bash script.sh --name ci_basic --profile basic --no-install
