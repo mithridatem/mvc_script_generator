@@ -117,7 +117,7 @@ Les classes concrètes sont résolues automatiquement lorsque le conteneur peut 
 ```php
 $container->factory(
     PDO::class,
-    static fn (): PDO => Mysql::connectBdd()
+    static fn (): PDO => ConnectionFactory::create()->connect()
 );
 ```
 
@@ -202,3 +202,9 @@ php tests/security/reproduce_repository_leak.php
 
 Ces tests ne remplacent pas une validation avec une base MySQL réelle,
 un serveur HTTP et des paramètres HTTPS de production.
+
+## Choix du moteur PDO
+
+La sélection `DATABASE_DRIVER` prend en charge `mysql` (défaut), `pgsql` et `sqlite` ; utiliser `--db-driver` lors de la génération ou modifier `.env`. Le contrat `ConnectionInterface` est implémenté par trois classes, avec sélection via `ConnectionFactory`. `PDO` reste le type utilisé par les repositories.
+
+Le chemin SQLite par défaut est `var/database.sqlite`, hors de `public/`. La documentation détaillée (extensions, initialisation SQL, limites des dialectes) se trouve dans [docs/databases.md](databases.md). Les tests de connexion sont dans `tests/database_connection_test.php`.
