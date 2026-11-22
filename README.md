@@ -175,6 +175,10 @@ bash tests/smoke-database-drivers.sh
 
 Les smoke tests valident la génération, la syntaxe PHP, les structures de profils et la configuration sans base SQL. Le workflow GitHub Actions installe aussi les dépendances et exécute les tests des projets générés. Pour un déploiement public, revoir sécurité, secrets, HTTPS, rate limiting et gestion d'erreurs.
 
+## Deux stratégies CSRF dans le profil Advanced Web
+
+Le profil `advanced` propose `CSRF_MODE=session` (mode historique par défaut) ou `CSRF_MODE=stateless` (double-submit cookie signé par HMAC, sans stockage des tokens CSRF en session). En mode stateless, renseigner une clé forte `CSRF_SECRET` dans le `.env` local ignoré par Git, ou via les secrets du serveur en production. La session PHP reste utilisée pour l'authentification Web. Consulter `templates/advanced/docs/csrf-strategies.md` pour les contraintes HTTPS, les limites et les tests.
+
 ## Rendu HTML du profil Advanced Web
 
 Le profil `advanced` est synchronisé avec `mvc_starter/variant/web` : `render()` et `renderComponent()` retournent du HTML sous forme de `string` grâce à un buffer commun. Les composants sont affichés dans les templates avec `<?= $this->renderComponent(...) ?>` et le résultat du routeur est envoyé par `Application`.
