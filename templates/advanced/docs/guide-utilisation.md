@@ -159,6 +159,8 @@ php tests/guest_navigation_test.php
 php tests/login_input_test.php
 php tests/register_user_input_test.php
 php tests/csrf_token_manager_test.php
+php tests/stateless_csrf_token_manager_test.php
+php tests/stateless_csrf_middleware_test.php
 php tests/csrf_middleware_test.php
 php tests/csrf_route_configuration_test.php
 php tests/request_dto_mapping_test.php
@@ -177,7 +179,7 @@ Tester également en navigateur avec une vraie base de données : formulaire val
 - Ne pas désactiver le CSRF sous prétexte qu'un utilisateur est connecté.
 - Le squelette est pédagogique et doit être complété par des tests d'intégration selon le projet.
 
-**Pour les détails :** consulter `docs/csrf-middleware.md`, puis le code réel de `LoginController`, `CsrfMiddleware` et `UserService`.
+**Pour les détails :** consulter `docs/csrf-middleware.md` et `docs/csrf-strategies.md` (choix `CSRF_MODE=session|stateless`), puis le code réel de `LoginController`, `CsrfMiddleware` et `UserService`.
 
 ## 9. Déploiement et environnement
 
